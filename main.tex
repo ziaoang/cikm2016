@@ -38,11 +38,28 @@ The combined framework leads to a parsimonious fit over the latent features as i
 \keywords{Collaborative Filtering; Embedding}
 
 \section{Introduction}
-Recommender system, which recommends items based on users’ interests, has become more and more popular in many real-world situations.
-Collaborative filtering (CF) techniques, as the main thrust behind recommender systems, have been developed for many years and keep to be a hot area in both academia and industry.
+Recommender system has become more and more popular in many real-world situations, in the modern era of information overload.
+Lots of websites (e.g. Amazon, Netflix, Alibaba and Hulu) use recommender system to target customers and provide them with useful information.
+Recommender system aims to help users find the items, they are more likely to be interested in, from huge amounts of candidates.
+A widely used setting of recommendation system is to predict how a user would rate an item (such as a movie) given the past rating history of the users.
+Many classical recommendation methods have been proposed in recent years and they can be categorized into three classes:
+content-based methods, collaborative filtering (CF) based methods, and hybrid methods.
+Content-based methods \cite{pazzani2007content} make use of user profiles or product descriptions for recommendation.
+CF-based methods \cite{su2009survey} use the past activities or preferences, such as user ratings on items, without using user or product content information.
+Hybrid methods \cite{wang2011collaborative} seek to get the best of both worlds by combining content-based and CF-based methods.
+The CF based methods have been developed for many years and keep to be a hot area in both academia and industry due to their impressive performance.
+Collaborative filtering focuses on predicting the preference of one user by combining his feedback on a few items and the feedback of all other users.
+Among various CF based methods, matrix factorization (MF) models have become popular and achieves the state-of-the-art performance \cite{koren2009matrix}.
 
 \section{Relate Work}
+In general, our work is closely related to the following topics:
+matrix factorization based collaborative filtering and deep learning based collaborative filtering.
+We will discuss the two in the following subsections.
+
 \subsection{Matrix Factoriztion}
+The importance of accurate recommendation techniques moti- vated by wide ranging applications has fuelled a great amount of academic as well as industrial research in this area [17]. Recom- mender systems are most often based on collaborative filtering and there are typically two approaches that are widely used. In neigh- borhood methods, the similarity between users based on the content they have consumed and rated is the basis of a new recommenda- tion. A related but intrinsically more powerful approach has been the use of latent factor models. Matrix factorization (MF) is the most popular technique to derive latent factor models and their suc- cess at the Netflix competition have highlighted their strength [18, 2]. For example, the given matrix X ∈ RN×M consisting of the item preferences of the users can be decomposed as a product of two low dimensional matrices U and V . The decomposition can be carried out by a variety of methods ranging from SVD based approaches [19] to the relatively new non-negative matrix factor- ization approach [20]. One classical MF method is probabilistic matrix factorization (PMF) [4]. The underlying assumption behind this method is that the prior probability distribution of the latent factors and the probability of the observed ratings given the latent
+factors follows a Gaussian distribution. Many algorithms have been developed to enhance the performance of PMF, by designing the Bayesian versions [21, 22, 23], or incorporating side information, such as social relationships [24, 5, 25].
+Although promising, matrix factorization methods suffer from the problem of cold-start, i.e. what recommendations to make when a new user/item arrives in the system. Another problem often pre- sented in many real world applications is data sparsity or reduced coverage. Incorporating side information has shown promising per- formance in collaborative filtering in such scenarios. Porteous et al. proposed a Bayesian matrix factorization (BMF) approach with side information and Dirichlet process mixtures [26]. A varia- tional BMF method and a hierarchical BMF method that utilizes side information were also proposed in [27] and [28], respectively. Hu et al. proposed a cross-domain triadic factorization (CDTF) method [29], which leverages the information from other domains. The methods discussed above are proposed for addressing recom- mendation problems. Recently, MF based collaborative filtering is also applied to response prediction [30, 31]. The afore-mentioned approaches can alleviate the problem of cold start and data sparsity but might still suffer when the side information is sparse. Learn- ing effective features is critical in matrix factorization. Recently, deep learning based methods have emerged as a powerful tool for learning representation and are widely used in many applications ranging from computer vision to speech recognition and machine translation. In this paper, our goal is to combine deep learning based methods with matrix factorization for collaborative filtering. In the next subsection, we survey the application of deep learning based methods for collaborative filtering.
 
 
 \subsection{Nerual Network}
@@ -63,6 +80,7 @@ For instance, (Glorot et al., 2011; Wang et al., 2014a) respectively auto-encode
 Finally, (den Oord et al., 2013; Wang et al., 2014b) use Convolutional Networks on music samples.
 In our case, side information and ratings are used together without any unsupervised
 pretreatment.
+
 
 \section{Method}
 This is the abstract about the paper this is the abstract about the paper.
@@ -88,22 +106,29 @@ retrieval performance;
 (3) the influence of the interpolation coefficient in query expansion and
 (4) a comparison of two different entity feedback acquisition methods.
 
-\begin{table}[htpb]
+\begin{table*}[htpb]
 	\centering
 	\caption{Statistics of datasets used in our experiment.}
 	\label{tab:topics}
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{|l|c|c|c|c|c|c|}
 		\hline
-		\textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} \\
+		\textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} & \textbf{User Features} & \textbf{Item Features} \\
 		\hline
-		MovieLens-1m  & 6040   & 3706  & 1000209  & 95.53\% \\
-		MovieLens-10m & 69878  & 10677 & 10000054 & 98.66\% \\
-		MovieLens-20m & 138493 & 26744 & 20000263 & 99.46\% \\
+		MovieLens-1m  & 6,040   & 3,706  & 1,000,209  & 95.53\% & Age, gender, and occupation & Genres \\
+		MovieLens-10m & 69,878  & 10,677 & 10,000,054 & 98.66\% & Age, gender, and occupation & Genres \\
+		MovieLens-20m & 138,493 & 26,744 & 20,000,263 & 99.46\% & Age, gender, and occupation & Genres \\
 		\hline
 	\end{tabular}
-\end{table}
+\end{table*}
 
-
+We employ the root mean squared error (RMSE) and mean absolute error (MAE) as the evaluation metric.
+RMSE and MAE are defined as:
+$$ RSME = \sqrt{ \frac{1}{N} \sum_{i,j} Z_{ij} (R_{ij} - \hat{R}_{ij})^2 } $$
+$$ MAE = \frac{1}{N} \sum_{i,j} Z_{ij} |R_{ij} - \hat{R}_{ij}| $$
+where $N$ is the total number of ratings in the test set,
+$R_{ij}$ is the ground-truth rating of user $i$ for item $j$,
+$\hat{R_{ij}}$ denotes the corresponding predicted rating,
+and $Z_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
 \subsection{Movie Recommendation}
 For movie recommendation, we conduct experiments on two benchmark
