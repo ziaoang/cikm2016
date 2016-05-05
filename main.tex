@@ -3,7 +3,7 @@
 
 \setcopyright{acmcopyright}
 
-\title{Collaborative Filtering via User Embedding and Item Embedding}
+\title{Improving Collaborative Filtering with Embedding Model}
 
 \numberofauthors{1}
 \author{
@@ -20,25 +20,49 @@ Dongyan Zhao\titlenote{Corresponding author.}\\
 \maketitle
 
 \begin{abstract}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+Collaborative filtering (CF) has been widely employed within recommender systems in many real-world situations.
+Learning effective latent factors plays the most important role in collaborative filtering.
+Traditional CF methods based upon matrix factorization techniques learn the latent factors from the user-item ratings and suffer from the cold start problem as well as the sparsity problem.
+Some improved CF methods enrich the priors on the latent factors by incorporating side information as regularization.
+However, the learned latent factors may not be very effective due to the sparse nature of the ratings and the side information.
+To tackle this problem, we learn effective latent representations via deep learning.
+Deep learning models have emerged as very appealing in learning effective representations in many applications.
+In particular, we propose a general deep architecture for CF by integrating matrix factorization with deep feature learning.
+We provide a natural instantiations of our architecture by combining probabilistic matrix factorization with marginalized denoising stacked auto-encoders.
+The combined framework leads to a parsimonious fit over the latent features as indicated by its improved performance in comparison to prior state-of-art models over four large datasets for the tasks of movie/book recommendation and response prediction.
 \end{abstract}
 
-\keywords{Collaborative Filtering; Stacked Denoising AutoEncoder}
+\category{H.2.8}{Database Management}{Data Mining}
+\category{H.3.3}{Information Search and Retrieval}{Information Filtering}
+\terms{Algorithms, Experimentation, Performance}
+\keywords{Collaborative Filtering; Embedding}
 
 \section{Introduction}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+Recommender system, which recommends items based on users’ interests, has become more and more popular in many real-world situations.
+Collaborative filtering (CF) techniques, as the main thrust behind recommender systems, have been developed for many years and keep to be a hot area in both academia and industry.
 
 \section{Relate Work}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+\subsection{Matrix Factoriztion}
+
+
+\subsection{Nerual Network}
+Neural Networks have attracted little attention in the CF community.
+In a preliminary work, (Salakhutdinov et al., 2007) tackled the Netflix challenge using Restricted Boltzmann Machines but little published work had follow (Truyen et al., 2009).
+While Deep Learning has tremendous success in image and speech recognition (LeCun
+et al., 2015), sparse data has received less attention and remains a challenging problem for Neural Networks.
+
+Nevertheless, Neural Networks are able to discover nonlinear latent variables with heterogeneous data (LeCun et al., 2015) which makes them a promising tool for CF.
+(Sedhain et al., 2015; Strub et al., 2015; Dziugaite et al., 2015) directly train Autoencoders to provide the best predicted ratings.
+Those methods report excellent results in the general case.
+However, the cold start initialization problem is ignored.
+For instance, AutoRec (Sedhain et al., 2015) replaces unpredictable ratings by an arbitrary selected score.
+In our case, we apply a training loss designed for sparse rating inputs and we integrate side information to lessen the cold start effect.
+
+Other contributions deal with this cold start problem by using Neural Networks properties for Content-Based Filtering: Neural Networks are first trained to learn a feature representation from the item which is then processed obtain a CF approach such as Probabilistic Matrix Factorization (Mnih et al., 2007) to provide the final rating.
+For instance, (Glorot et al., 2011; Wang et al., 2014a) respectively auto-encode bag-of-words from restaurant reviews and movie plots, (Li et al., 2015) auto-encode heterogeneous side information from users and items.
+Finally, (den Oord et al., 2013; Wang et al., 2014b) use Convolutional Networks on music samples.
+In our case, side information and ratings are used together without any unsupervised
+pretreatment.
 
 \section{Method}
 This is the abstract about the paper this is the abstract about the paper.
@@ -56,10 +80,47 @@ This is the abstract about the paper this is the abstract about the paper.
 This is the abstract about the paper this is the abstract about the paper.
 
 \section{Experiment}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+In this section, we conduct several experiments to evaluate the effectiveness of our embedding model.
+In these experiments, we also conduct corresponding analysis to investigate:
+(1) the influence of the various feedback entity model parameter settings on
+retrieval performance;
+(2) the effects of feedback tweets number;
+(3) the influence of the interpolation coefficient in query expansion and
+(4) a comparison of two different entity feedback acquisition methods.
+
+\begin{table}[htpb]
+	\centering
+	\caption{Statistics of datasets used in our experiment.}
+	\label{tab:topics}
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} \\
+		\hline
+		MovieLens-1m  & 6040   & 3706  & 1000209  & 95.53\% \\
+		MovieLens-10m & 69878  & 10677 & 10000054 & 98.66\% \\
+		MovieLens-20m & 138493 & 26744 & 20000263 & 99.46\% \\
+		\hline
+	\end{tabular}
+\end{table}
+
+
+
+\subsection{Movie Recommendation}
+For movie recommendation, we conduct experiments on two benchmark
+datasets MovieLens-100K and MovieLens-1M 1, which are
+commonly used for evaluating collaborative filtering algorithms.
+The MovieLens-100K dataset contains 100K ratings of 943 users
+and 1682 movies, and the MovieLens-1M dataset consists of about
+1 million ratings of 6040 users and 3706 movies. Each rating is
+an integer between 1 (worst) and 5 (best). The ratings are highly
+sparse. Table 2 summarizes the statistics of datasets. We extract
+the features from side information of users and movies to construct
+X and Y . To summarize, the user information which consists of
+the user‘s age, gender and occupation were encoded into a binary
+valued vector of length 28. Similarly, the item feature information
+which consists of the 18 category of movie genre were encoded into
+a binary valued vector of length 18. Ratings were normalized to be
+zero-mean.
 
 \section{Conclusions}
 This is the abstract about the paper this is the abstract about the paper.
@@ -68,10 +129,9 @@ This is the abstract about the paper this is the abstract about the paper.
 This is the abstract about the paper this is the abstract about the paper.
 
 \section{Acknowledgments}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+The work reported in this paper is supported by the National Natural Science Foundation of China Grant 61370116.
+We thank anonymous reviewers for their beneficial comments.
+We also thank Feifan Fan and Yue Fei for valuable suggestions related to this paper.
 
 \bibliographystyle{abbrv}
 \bibliography{sigproc}
