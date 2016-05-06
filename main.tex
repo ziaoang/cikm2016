@@ -106,6 +106,8 @@ retrieval performance;
 (3) the influence of the interpolation coefficient in query expansion and
 (4) a comparison of two different entity feedback acquisition methods.
 
+
+
 \begin{table*}[htpb]
 	\centering
 	\caption{Statistics of datasets used in our experiment.}
@@ -114,21 +116,25 @@ retrieval performance;
 		\hline
 		\textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} & \textbf{User Features} & \textbf{Item Features} \\
 		\hline
-		MovieLens-1m  & 6,040   & 3,706  & 1,000,209  & 95.53\% & Age, gender, and occupation & Genres \\
-		MovieLens-10m & 69,878  & 10,677 & 10,000,054 & 98.66\% & Age, gender, and occupation & Genres \\
-		MovieLens-20m & 138,493 & 26,744 & 20,000,263 & 99.46\% & Age, gender, and occupation & Genres \\
+		MovieLens-1m  & 6,040   & 3,706  & 1,000,209  & 95.53\% & Gender, Age, and occupation & Genres \\
+		MovieLens-10m & 69,878  & 10,677 & 10,000,054 & 98.66\% & - & Genres \\
+		MovieLens-20m & 138,493 & 26,744 & 20,000,263 & 99.46\% & - & Genres \\
 		\hline
 	\end{tabular}
 \end{table*}
 
+
+
 We employ the root mean squared error (RMSE) and mean absolute error (MAE) as the evaluation metric.
 RMSE and MAE are defined as:
-$$ RSME = \sqrt{ \frac{1}{N} \sum_{i,j} Z_{ij} (R_{ij} - \hat{R}_{ij})^2 } $$
-$$ MAE = \frac{1}{N} \sum_{i,j} Z_{ij} |R_{ij} - \hat{R}_{ij}| $$
+$$ RSME = \sqrt{ \frac{1}{N} \sum_{i,j} I_{ij} (R_{ij} - \hat{R}_{ij})^2 } $$
+$$ MAE = \frac{1}{N} \sum_{i,j} I_{ij} |R_{ij} - \hat{R}_{ij}| $$
 where $N$ is the total number of ratings in the test set,
 $R_{ij}$ is the ground-truth rating of user $i$ for item $j$,
 $\hat{R_{ij}}$ denotes the corresponding predicted rating,
-and $Z_{ij}$ is abinary matrix that indicates the ratings in the test set.
+and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
+
+
 
 \subsection{Movie Recommendation}
 For movie recommendation, we conduct experiments on two benchmark
