@@ -52,35 +52,8 @@ Collaborative filtering focuses on predicting the preference of one user by comb
 Among various CF based methods, matrix factorization (MF) models have become popular and achieves the state-of-the-art performance \cite{koren2009matrix}.
 
 \section{Relate Work}
-In general, our work is closely related to the following topics:
-matrix factorization based collaborative filtering and deep learning based collaborative filtering.
-We will discuss the two in the following subsections.
-
 \subsection{Matrix Factoriztion}
-The importance of accurate recommendation techniques moti- vated by wide ranging applications has fuelled a great amount of academic as well as industrial research in this area [17]. Recom- mender systems are most often based on collaborative filtering and there are typically two approaches that are widely used. In neigh- borhood methods, the similarity between users based on the content they have consumed and rated is the basis of a new recommenda- tion. A related but intrinsically more powerful approach has been the use of latent factor models. Matrix factorization (MF) is the most popular technique to derive latent factor models and their suc- cess at the Netflix competition have highlighted their strength [18, 2]. For example, the given matrix X ∈ RN×M consisting of the item preferences of the users can be decomposed as a product of two low dimensional matrices U and V . The decomposition can be carried out by a variety of methods ranging from SVD based approaches [19] to the relatively new non-negative matrix factor- ization approach [20]. One classical MF method is probabilistic matrix factorization (PMF) [4]. The underlying assumption behind this method is that the prior probability distribution of the latent factors and the probability of the observed ratings given the latent
-factors follows a Gaussian distribution. Many algorithms have been developed to enhance the performance of PMF, by designing the Bayesian versions [21, 22, 23], or incorporating side information, such as social relationships [24, 5, 25].
-Although promising, matrix factorization methods suffer from the problem of cold-start, i.e. what recommendations to make when a new user/item arrives in the system. Another problem often pre- sented in many real world applications is data sparsity or reduced coverage. Incorporating side information has shown promising per- formance in collaborative filtering in such scenarios. Porteous et al. proposed a Bayesian matrix factorization (BMF) approach with side information and Dirichlet process mixtures [26]. A varia- tional BMF method and a hierarchical BMF method that utilizes side information were also proposed in [27] and [28], respectively. Hu et al. proposed a cross-domain triadic factorization (CDTF) method [29], which leverages the information from other domains. The methods discussed above are proposed for addressing recom- mendation problems. Recently, MF based collaborative filtering is also applied to response prediction [30, 31]. The afore-mentioned approaches can alleviate the problem of cold start and data sparsity but might still suffer when the side information is sparse. Learn- ing effective features is critical in matrix factorization. Recently, deep learning based methods have emerged as a powerful tool for learning representation and are widely used in many applications ranging from computer vision to speech recognition and machine translation. In this paper, our goal is to combine deep learning based methods with matrix factorization for collaborative filtering. In the next subsection, we survey the application of deep learning based methods for collaborative filtering.
-
-
 \subsection{Nerual Network}
-Neural Networks have attracted little attention in the CF community.
-In a preliminary work, (Salakhutdinov et al., 2007) tackled the Netflix challenge using Restricted Boltzmann Machines but little published work had follow (Truyen et al., 2009).
-While Deep Learning has tremendous success in image and speech recognition (LeCun
-et al., 2015), sparse data has received less attention and remains a challenging problem for Neural Networks.
-
-Nevertheless, Neural Networks are able to discover nonlinear latent variables with heterogeneous data (LeCun et al., 2015) which makes them a promising tool for CF.
-(Sedhain et al., 2015; Strub et al., 2015; Dziugaite et al., 2015) directly train Autoencoders to provide the best predicted ratings.
-Those methods report excellent results in the general case.
-However, the cold start initialization problem is ignored.
-For instance, AutoRec (Sedhain et al., 2015) replaces unpredictable ratings by an arbitrary selected score.
-In our case, we apply a training loss designed for sparse rating inputs and we integrate side information to lessen the cold start effect.
-
-Other contributions deal with this cold start problem by using Neural Networks properties for Content-Based Filtering: Neural Networks are first trained to learn a feature representation from the item which is then processed obtain a CF approach such as Probabilistic Matrix Factorization (Mnih et al., 2007) to provide the final rating.
-For instance, (Glorot et al., 2011; Wang et al., 2014a) respectively auto-encode bag-of-words from restaurant reviews and movie plots, (Li et al., 2015) auto-encode heterogeneous side information from users and items.
-Finally, (den Oord et al., 2013; Wang et al., 2014b) use Convolutional Networks on music samples.
-In our case, side information and ratings are used together without any unsupervised
-pretreatment.
-
 
 \section{Method}
 This is the abstract about the paper this is the abstract about the paper.
