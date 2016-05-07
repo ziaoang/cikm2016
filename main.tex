@@ -3,7 +3,7 @@
 
 \setcopyright{acmcopyright}
 
-\title{Improving Collaborative Filtering with Embedding Model}
+\title{Improving Collaborative Filtering with Pseudo Side Information}
 
 \numberofauthors{1}
 \author{
@@ -21,21 +21,22 @@ Dongyan Zhao\titlenote{Corresponding author.}\\
 
 \begin{abstract}
 Collaborative filtering (CF) has been widely employed within recommender systems in many real-world situations.
-Learning effective latent factors plays the most important role in collaborative filtering.
-Traditional CF methods based upon matrix factorization techniques learn the latent factors from the user-item ratings and suffer from the cold start problem as well as the sparsity problem.
-Some improved CF methods enrich the priors on the latent factors by incorporating side information as regularization.
-However, the learned latent factors may not be very effective due to the sparse nature of the ratings and the side information.
-To tackle this problem, we learn effective latent representations via deep learning.
-Deep learning models have emerged as very appealing in learning effective representations in many applications.
-In particular, we propose a general deep architecture for CF by integrating matrix factorization with deep feature learning.
-We provide a natural instantiations of our architecture by combining probabilistic matrix factorization with marginalized denoising stacked auto-encoders.
-The combined framework leads to a parsimonious fit over the latent features as indicated by its improved performance in comparison to prior state-of-art models over four large datasets for the tasks of movie/book recommendation and response prediction.
+Its basic assumption is that items liked by the same user would be similar or users like same items would share similar interest.
+But it not always holds because users' interest may change over time.
+If user likes two items at the same time period, there is a strong possibility that they are similar.
+But the possibility will become small if user likes they at different time point.
+In this paper, we propose a method that takes advantage of user ratings timeline to describe the time sensitive relationship between users and items.
+To reach this goal, we use a language-based algorithm to learn effective latent embeddings for users and items.
+Language model aims to extract the potential association between sentences and words, which is similar with users and items in recommender system.
+The learned embedding for users and items can be considered as a kind of side information that describes the time sensitive relationship between users and items.
+We then combine them with origin rating information to predict missing ratings in a feature-based collaborative filtering framework.
+Experimental results on three MovieLens datasets demonstrate that our approach can achieve the state-of-the-art performance.
 \end{abstract}
 
 \category{H.2.8}{Database Management}{Data Mining}
 \category{H.3.3}{Information Search and Retrieval}{Information Filtering}
 \terms{Algorithms, Experimentation, Performance}
-\keywords{Collaborative Filtering; Embedding}
+\keywords{Recommender System; Collaborative Filtering; Embedding Model;}
 
 \section{Introduction}
 Recommender system has become more and more popular in many real-world situations, in the modern era of information overload.
@@ -55,20 +56,33 @@ Among various CF based methods, matrix factorization (MF) models have become pop
 \subsection{Matrix Factoriztion}
 \subsection{Nerual Network}
 
-\section{Method}
-This is the abstract about the paper this is the abstract about the paper.
+\section{Our Approach}
+Local Interest
+Global Interest
 
-\subsection{SubMethod}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
 
-\subsection{SubMethod}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+
+
+
+In this section we present our algorithm for joint modeling of users and the items he rated,
+where we learn distributed representations for both the users and the items in a shared and low-dimensional embedding space.
+The approach is inspired by \cite{le2014distributed} for learning vector representations of words which take advantage of a word order observed in a sentence.
+
+Then we generate user features and item features via the learned embedding model,
+and combine them with the whole origin rating information in the machine learning framework.
+Two machine learning methods are tried: regression learning and pairwise ranking.
+
+\subsection{Embedding Model}
+
+
+
+
+
+\subsection{Machine Learning}
+\subsubsection{Regression Learning }
+we use \cite{chen2012svdfeature}.
+
+\subsubsection{Pairwise Ranking}
 
 \section{Experiment}
 In this section, we conduct several experiments to evaluate the effectiveness of our embedding model.
