@@ -57,32 +57,128 @@ Among various CF based methods, matrix factorization (MF) models have become pop
 \subsection{Nerual Network}
 
 \section{Our Approach}
-Local Interest
-Global Interest
-
-
-
-
-
-In this section we present our algorithm for joint modeling of users and the items he rated,
-where we learn distributed representations for both the users and the items in a shared and low-dimensional embedding space.
-The approach is inspired by \cite{le2014distributed} for learning vector representations of words which take advantage of a word order observed in a sentence.
-
-Then we generate user features and item features via the learned embedding model,
-and combine them with the whole origin rating information in the machine learning framework.
-Two machine learning methods are tried: regression learning and pairwise ranking.
+In this section,
+we first introduce our embedding framework to extract the relationship
+between users and items based on the local interest and global interest.
+Then we treat the embeding information as pseudo side information,
+and utilize it in the feature-based matrix factorization.
 
 \subsection{Embedding Model}
+As we know, users' interest changes over time,
+but in a fixed time period, their interest should be stable.
+We define the interest in a fixed time period as \textbf{local interest}
+and the interest in a long time period as \textbf{global interest}.
+It is common that the items in the same time period
+should have a higher possibility to be similar than
+items not in the same time period.
+
+\begin{figure*}[htbp]
+	\centering
+	\includegraphics[scale=0.6]{images/1.pdf}
+	\caption{A Example for Local Interest and Global Interest}
+	\label{fig:example}
+\end{figure*}
+
+For example, as illustrated in the left of Figure \ref{fig:example},
+for a cetain $user$, five items, he interacted in the last,
+are listed on the timeline according to the time order.
+$item_2$ is more close to $item_1$ than $item_5$,
+so it shoule be more similar with $item_1$ than $item_5$.
+\footnote{We use time window to judge time proximity instead of extract timestamp here for convenience.}
+
+By embedding model, we want to project users and items in a low-dimensionality space,
+and change the interest similarity into sapce distance.
+$item_2$ and $item_1$ are close to each other than $item_2$ and $item_5$
+in the projection space, as shown in the right of Figure \ref{fig:example}.
+
+Inspired by paragraph2vec algorithm \cite{le2014distributed} for learning vector representations of words
+which take advantage of a word order observed in a sentence,
+we choose to use neural network based language model
+to embed this interest similarity information.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=0.55]{images/2.pdf}
+	\caption{Embedding Model for Extracting Interest Similarity from Users and Items}
+	\label{fig:embedding}
+\end{figure}
+
+The embedding model simultaneously learns vector representations of users and items
+by considering the user as a global context,
+and the architecture of the embedding model is illustrated in Figure \ref{fig:embedding}.
+The training data set was derived from user interaction timeline $T$,
+which comprises users $u_n$ and their interacted items
+ordered by the interacted time,
+$u_n = (i_{n_1}, i_{n_2}, ..., i_{n_{L_n}},)$,
+where $L_n$ denotes number of items interacted by user $u_n$.
+
+More formally, objective of the embedding model is to
+maximize the log-likelihood over the set of $T$ of all the interaction timeline,
+
+$$
+	\sum_{t \in T}
+	\left(
+		\sum_{u_n \in t}
+		{
+			\log p ( u_n | i_{n_1}:i_{n_{L_n}} )
+		} + \\
+		\sum_{i_{n_j} \in u_n}
+		{
+			\log p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n )
+		}
+	\right)
+$$
+
+where $c$ is the time window size.
+The probability $p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n )$ is defined using a softmax function,
+
+$$
+	p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n ) =
+	\frac
+	{
+		exp( \overline{v} ^ \mathrm{ T } v_{ i_{n_j} }^{'} )
+	}
+	{
+		\sum_{p=1}^{V} exp( \overline{v} ^ \mathrm{ T } v_{ i }^{'} )
+	}
+$$
+
+where $todo$ is the output vector representation of $todo$,
+and $todo$ is averaged vector representation of the product context
+including corresponding $todo$, defined as
+
+$$
+	v = \frac{1}{2c+1} (v_{u_n} + \sum{v_{p_n}})
+$$
+
+where $todo$ is the input vector representation of $todo$.
+Similarly, the probability $todo$ is defined as
+
+$$
+	p(..) = \frac{exp(..)}{\sum{..}}
+$$
+
+where $todo$ is the output vector representation of $todo$,
+and $todo$ is averaged input vector representation of all the products
+purchased by user $todo$,
+
+$$
+	\overline{v} = \frac{1}{U_n}
+$$
+
+One of the main advantages of the user2vec model is that
+the product recommendations are specically tailored for
+that user based on his purchase history. However, disadvantage
+is that the model would need to be updated very frequently.
+Unlike product-to-product recommendations, which
+may be relevant for longer time periods, user-to-product recommendations
+need to change often to account for the most
+recent user purchases.
 
 
-
-
-
-\subsection{Machine Learning}
-\subsubsection{Regression Learning }
+\subsection{Learning Model}
 we use \cite{chen2012svdfeature}.
 
-\subsubsection{Pairwise Ranking}
 
 \section{Experiment}
 In this section, we conduct several experiments to evaluate the effectiveness of our embedding model.
@@ -123,22 +219,6 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
 
 
-\subsection{Movie Recommendation}
-For movie recommendation, we conduct experiments on two benchmark
-datasets MovieLens-100K and MovieLens-1M 1, which are
-commonly used for evaluating collaborative filtering algorithms.
-The MovieLens-100K dataset contains 100K ratings of 943 users
-and 1682 movies, and the MovieLens-1M dataset consists of about
-1 million ratings of 6040 users and 3706 movies. Each rating is
-an integer between 1 (worst) and 5 (best). The ratings are highly
-sparse. Table 2 summarizes the statistics of datasets. We extract
-the features from side information of users and movies to construct
-X and Y . To summarize, the user information which consists of
-the user‘s age, gender and occupation were encoded into a binary
-valued vector of length 28. Similarly, the item feature information
-which consists of the 18 category of movie genre were encoded into
-a binary valued vector of length 18. Ratings were normalized to be
-zero-mean.
 
 \section{Conclusions}
 This is the abstract about the paper this is the abstract about the paper.
