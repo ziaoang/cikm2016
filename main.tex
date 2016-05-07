@@ -106,74 +106,79 @@ to embed this interest similarity information.
 The embedding model simultaneously learns vector representations of users and items
 by considering the user as a global context,
 and the architecture of the embedding model is illustrated in Figure \ref{fig:embedding}.
-The training data set was derived from user interaction timeline $T$,
+The training data set was derived from users interaction timeline $T$,
 which comprises users $u_n$ and their interacted items
 ordered by the interacted time,
-$u_n = (i_{n_1}, i_{n_2}, ..., i_{n_{L_n}},)$,
+$i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}$,
 where $L_n$ denotes number of items interacted by user $u_n$.
 
 More formally, objective of the embedding model is to
 maximize the log-likelihood over the set of $T$ of all the interaction timeline,
 
-$$
-	\sum_{t \in T}
-	\left(
-		\sum_{u_n \in t}
-		{
-			\log p ( u_n | i_{n_1}:i_{n_{L_n}} )
-		} + \\
-		\sum_{i_{n_j} \in u_n}
-		{
-			\log p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n )
-		}
-	\right)
-$$
+\begin{equation}
+\begin{aligned}
+	\sum^{T} &\bigg( p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}) + \\
+			 &\sum_{j=1}^{L_n} p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n) \bigg)
+\end{aligned}
+\end{equation}
 
 where $c$ is the time window size.
-The probability $p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n )$ is defined using a softmax function,
 
-$$
-	p ( i_{n_j} | i_{n_{j-c}} : i_{n_{j+c}}, u_n ) =
+$p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}})$ can be treated as predicting the global interest,
+and it is defined using a softmax funxtion,
+
+\begin{equation}
+\begin{aligned}
+	p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}) =
 	\frac
 	{
-		exp( \overline{v} ^ \mathrm{ T } v_{ i_{n_j} }^{'} )
+		exp( \overline{v}_{1}^{\mathrm{T}} v_{u_n}^{'} )
 	}
 	{
-		\sum_{p=1}^{V} exp( \overline{v} ^ \mathrm{ T } v_{ i }^{'} )
+		\sum_{i=1}^{V} exp( \overline{v}_{1}^{\mathrm{T}} v_{i}^{'} )
 	}
-$$
+\end{aligned}
+\end{equation}
 
-where $todo$ is the output vector representation of $todo$,
-and $todo$ is averaged vector representation of the product context
-including corresponding $todo$, defined as
+where $v_{u_n}^{'}$ is the output vector representation of $u_n$,
+and $\overline{v}_{1}$ is averaged input vector representation of all the items
+interacted by user $u_n$.
 
-$$
-	v = \frac{1}{2c+1} (v_{u_n} + \sum{v_{p_n}})
-$$
+\begin{equation}
+\begin{aligned}
+	\overline{v}_{1} = \frac{\sum_{j=1}^{T_n} v_{i_{n_j}}}{T_n}
+\end{aligned}
+\end{equation}
 
-where $todo$ is the input vector representation of $todo$.
-Similarly, the probability $todo$ is defined as
+Similarly, $p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n)$
+can be treated as predict each items in the same local interest,
+and it is also defined using a softmax funxtion,
 
-$$
-	p(..) = \frac{exp(..)}{\sum{..}}
-$$
+\begin{equation}
+\begin{aligned}
+	p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n) =
+	\frac
+	{
+		exp( \overline{v}_{2}^{\mathrm{T}} v_{i_{n_j}}^{'} )
+	}
+	{
+		\sum_{i=1}^{V} exp( \overline{v}_{2}^{\mathrm{T}} v_{i}^{'} )
+	}
+\end{aligned}
+\end{equation}
 
-where $todo$ is the output vector representation of $todo$,
-and $todo$ is averaged input vector representation of all the products
-purchased by user $todo$,
+where $v_{i_{n_j}}^{'}$ is the output vector representation of $i_{n_j}$,
+and $\overline{v}_{2}$ is averaged input vector representation of items in the time window
+and corresponding $u_n$.
 
-$$
-	\overline{v} = \frac{1}{U_n}
-$$
+\begin{equation}
+\begin{aligned}
+	\overline{v}_{2} = \frac{ v_{i_{n_{j-c}}} + ... + v_{i_{n_{j-1}}} + 
+	v_{i_{n_{j+1}}} + ... + v_{i_{n_{j+c}}} + v_{u_n} }{2c+1}
+\end{aligned}
+\end{equation}
 
-One of the main advantages of the user2vec model is that
-the product recommendations are specically tailored for
-that user based on his purchase history. However, disadvantage
-is that the model would need to be updated very frequently.
-Unlike product-to-product recommendations, which
-may be relevant for longer time periods, user-to-product recommendations
-need to change often to account for the most
-recent user purchases.
+
 
 
 \subsection{Learning Model}
