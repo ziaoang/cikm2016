@@ -1,9 +1,16 @@
 \documentclass{sig-alternate-05-2015}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+
+\usepackage{mathrsfs}
+
 \begin{document}
 
 \setcopyright{acmcopyright}
 
-\title{Improving Collaborative Filtering with Pseudo Side Information}
+\title{Improving Collaborative Filtering with Latent Side Information}
 
 \numberofauthors{1}
 \author{
@@ -163,10 +170,66 @@ whereas our model learns deep features for both items and users.
 
 \section{Our Approach}
 In this section,
-we first introduce our embedding framework to extract the relationship
+we first describe the definition of the task to be solved and
+the notation we are going to use in this paper. 
+Then we introduce our embedding model to extract the relationship
 between users and items based on the local interest and global interest.
-Then we treat the embeding information as pseudo side information,
-and utilize it in the feature-based matrix factorization.
+In the last, we utilize the embedding information as pseudo side information
+in the machine learning model to do the final prediction.
+
+\subsection{Problem Definition}
+Given $N$ users and $M$ items, the rating $r_{ij}$ is the rating given by
+the $i^{th}$ user for the $j^{th}$ item.
+In the common real-world situations,
+users usually rate on a fraction of items, not on the whole items.
+Therefore,
+those ratings entail a sparse matrix $\mathbf{R} \in \mathbb{R}^{N \times M}$,
+as illustrated in Figure \ref{fig:matrix}.
+The goal of recommender system is to make a prediction on the missing ratings.
+Based on that, we will know the preference of a user on the items he never rates,
+and recommend high score items to him.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics{images/3.pdf}
+	\caption{An Example of Matrix R}
+	\label{fig:matrix}
+\end{figure}
+
+Matrix Factorization is a classic method to solve this problem.
+It aims to find a $K$ dimensional low rank matrix $\mathbf{\hat{R}} \in \mathbb{R}^{N \times M}$
+where $\mathbf{\hat{R}} = \mathbf{U} \mathbf{V}^\mathrm{T}$ with
+$\mathbf{U} \in \mathbb{R}^{N \times K}$ and $\mathbf{V} \in \mathbb{R}^{M \times K}$
+are two matrices of rank $K$ encoding a dense representation of the users and items with
+
+\begin{equation}
+\begin{aligned}
+	\argmin_{\mathbf{U},\mathbf{V}}
+	\sum_{(i,j) \in \mathcal{K}(\mathbf{R})}
+	( r_{ij} - \overline{\mathbf{u}}_i^{\mathrm{T}} \overline{\mathbf{v}}_j ) ^ 2 +
+	\lambda ( \left\| \overline{\mathbf{u}}_i \right\|_{Fro}^2 +
+	\left\| \overline{\mathbf{v}}_j \right\|_{Fro}^2 )
+\end{aligned}
+\end{equation}
+
+where $\mathcal{K}(\mathbf{R})$ is the set of indices of known ratings,
+$\overline{\mathbf{u}}_i$ and $\overline{\mathbf{v}}_j$
+are the corresponding line vectors of $\mathbf{U}$ and $\mathbf{V}$,
+$\lambda$ is the coefficient that controls the influence of L2 regularization,
+and $\left\| \cdot \right\|_{Fro}$ is the Frobenius norm.
+
+Matrix Factorization techniques, as the main thrust behind collaborative filtering,
+have been developed for many years and keep to be a hot area in both academia and industry.
+But it suffers from the problem of cold-start,
+i.e. what recommendations to make when a new user or a new item arrives in the system
+with the fact that their have no ratings information.
+Meanwhile, when the ratings information is too sparse,
+the performance of matrix factorization will decrease rapidly.
+
+Side information, such as the users' profiles and the items' properties,
+is a effective resource to remit this problem.
+In the next section, we will propose a embedding model
+to extract latent side information based on the local interest and global interest.
 
 \subsection{Embedding Model}
 As we know, users' interest changes over time,
@@ -286,6 +349,24 @@ and corresponding $u_n$.
 
 \subsection{Learning Model}
 With the help of embedding model, we can get the vector representation of users and tiems.
+
+There are two important factors in most CF problems: users' interests and items' properties.
+Various kinds of information can be used to model these factors.
+Our model summarizes the three factors as feature vectors (denoted by
+$\alpha \in \mathbb{R}^n$, $\beta \in \mathbb{R}^m$) and predicts the preference score $\hat{r}$ as
+
+\begin{equation}
+\begin{aligned}
+	\hat{r} = \sum_{i=1}^{n} \alpha_{i} b_{i}^{(u)} + \sum_{i=1}^{m} \alpha_{i} b_{i}^{(i)} +
+	\left( \sum_{i=1}^{n} \alpha_{i} \textbf{p}_{i} \right) ^ \mathrm{T}
+	\left( \sum_{i=1}^{m} \beta_{i} \textbf{q}_{i} \right)
+\end{aligned}
+\end{equation}
+
+where $\textbf{p}_{i} \in \mathbb{R}^d$ and $\textbf{q}_{i} \in \mathbb{R}^d$
+are $d$ dimensional latent factors associated with each feature.
+$b_{i}^{(u)}$ and $b_{i}^{(i)}$ are bias parameters that directly influence the prediction.
+
 
 
 we use \cite{chen2012svdfeature}.
