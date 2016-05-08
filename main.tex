@@ -191,7 +191,7 @@ and recommend high score items to him.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics{images/3.pdf}
+	\includegraphics[scale=0.8]{images/3.pdf}
 	\caption{An Example of Matrix R}
 	\label{fig:matrix}
 \end{figure}
@@ -232,13 +232,31 @@ In the next section, we will propose a embedding model
 to extract latent side information based on the local interest and global interest.
 
 \subsection{Embedding Model}
-As we know, users' interest changes over time,
-but in a fixed time period, their interest should be stable.
-We define the interest in a fixed time period as \textbf{local interest}
-and the interest in a long time period as \textbf{global interest}.
-It is common that the items in the same time period
-should have a higher possibility to be similar than
-items not in the same time period.
+Collaborative Filtering aims at estimating the ratings
+a user would have given to all other items he never interact with
+by using the ratings of all the other users.
+The basic assumption of collaborative filtering is that
+items liked by the same user would be similar
+or users like same items would share similar interest.
+However, in real-world situations,
+it is not always hold because users' interest may change over
+a long time period.
+Meanwhile, the interest distribution of a user in a fixed time period
+are stable and don't change too much.
+
+To describe the phenomenon that interest changes over time,
+we propose the definition of \textbf{local interest} and \textbf{global interest}.
+
+\begin{itemize}
+\item \textbf{local interest} reflects the interest distribution of a user
+in a short and fixed time period.
+\item \textbf{global interest} reflects the interest distribution of a user
+in a long time period.
+\end{itemize}
+
+And we believe that item in the same local interest (i.e. in the same time period)
+of a user have a higher possibility to be similar than
+items in different local interest.
 
 \begin{figure*}[htbp]
 	\centering
@@ -248,21 +266,22 @@ items not in the same time period.
 \end{figure*}
 
 For example, as illustrated in the left of Figure \ref{fig:example},
-for a cetain $user$, five items, he interacted in the last,
-are listed on the timeline according to the time order.
-$item_2$ is more close to $item_1$ than $item_5$,
-so it shoule be more similar with $item_1$ than $item_5$.
-\footnote{We use time window to judge time proximity instead of extract timestamp here for convenience.}
+given a certain $\mathbf{user}$, we can see he interact with five items
+($\mathbf{item1}$ to $\mathbf{item5}$) in the last.
+They are list on the time line according to the time order.
+Let's assume that the time window size \footnote{We use time window to judge time proximity
+instead of extract timestamp here for convenience.} is set to $2$,
+Therefore $\mathbf{item1}$ and $\mathbf{item2}$ are in the same local interest,
+$\mathbf{item2}$ and $\mathbf{item3}$ are in the same local interest, and so on.
+Meanwhile $\mathbf{item2}$ and $\mathbf{item5}$ are in different local interest.
+That means $\mathbf{item2}$ has a higher possibility to be similar with $\mathbf{item1}$
+than $\mathbf{item5}$.
 
-By embedding model, we want to project users and items in a low-dimensionality space,
-and change the interest similarity into sapce distance.
-$item_2$ and $item_1$ are close to each other than $item_2$ and $item_5$
-in the projection space, as shown in the right of Figure \ref{fig:example}.
-
-Inspired by paragraph2vec algorithm \cite{le2014distributed} for learning vector representations of words
-which take advantage of a word order observed in a sentence,
-we choose to use neural network based language model
-to embed this interest similarity information.
+To describe the similarity preference in mathematical sense,
+we project users and items into a low-dimensionality space,
+and change the interest similarity into spacial distance.
+$\mathbf{item2}$ is close to $\mathbf{item1}$ and far away from $\mathbf{item5}$
+in the low-dimensionality space, as shown in the right of Figure \ref{fig:example}.
 
 \begin{figure}[htbp]
 	\centering
@@ -271,105 +290,131 @@ to embed this interest similarity information.
 	\label{fig:embedding}
 \end{figure}
 
+Inspired by paragraph2vec algorithm \cite{le2014distributed} for learning
+vector representations of words which take advantage of
+a word order observed in a sentence,
+we choose to use neural network based language model
+to embed this interest similarity information.
 The embedding model simultaneously learns vector representations of users and items
 by considering the user as a global context,
 and the architecture of the embedding model is illustrated in Figure \ref{fig:embedding}.
+
 The training data set was derived from users interaction timeline $T$,
-which comprises users $u_n$ and their interacted items
-ordered by the interacted time,
-$i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}$,
-where $L_n$ denotes number of items interacted by user $u_n$.
+which comprises users $u_i (i=1,2,...,N)$ and their interacted items ordered by the interacted time,
+$v_{i_1}$, $v_{i_2}$, ..., $v_{i_{L_i}}$,
+where $L_i$ denotes number of items interacted by user $u_i$,
+which is much less than the amount of items $M$.
 
 More formally, objective of the embedding model is to
 maximize the log-likelihood over the set of $T$ of all the interaction timeline,
 
 \begin{equation}
 \begin{aligned}
-	\sum^{T} &\bigg( p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}) + \\
-			 &\sum_{j=1}^{L_n} p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n) \bigg)
+	\sum_{i=1}^{N} \bigg( &p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_n}}) + \\
+	                      &\sum_{j=1}^{L_i} p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i) \bigg)
 \end{aligned}
 \end{equation}
 
 where $c$ is the time window size.
-
-$p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}})$ can be treated as predicting the global interest,
-and it is defined using a softmax funxtion,
+$p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_i}})$ is the probability to generate
+the global interest of $u_i$ based on all items he interacted.
+The prediction task is typically done via a multiclass classifier,
+such as softmax. There, we have
 
 \begin{equation}
-\begin{aligned}
-	p(u_n | i_{n_1}, i_{n_2}, ..., i_{n_{L_n}}) =
+	p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_i}}) =
 	\frac
 	{
-		exp( \overline{v}_{1}^{\mathrm{T}} v_{u_n}^{'} )
+		exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{u_i}^{'} )
 	}
 	{
-		\sum_{i=1}^{V} exp( \overline{v}_{1}^{\mathrm{T}} v_{i}^{'} )
+		\sum_{k=1}^{V} exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{k}^{'} )
 	}
-\end{aligned}
 \end{equation}
 
-where $v_{u_n}^{'}$ is the output vector representation of $u_n$,
-and $\overline{v}_{1}$ is averaged input vector representation of all the items
-interacted by user $u_n$.
+where $\mathbf{v}_{u_i}^{'}$ is the output vector representation of $u_i$,
+$V$ is the set of the whole items,
+and $\overline{\mathbf{v}}_{1}$ is averaged input vector representation of all the items
+interacted by user $u_i$, i.e.
 
 \begin{equation}
-\begin{aligned}
-	\overline{v}_{1} = \frac{\sum_{j=1}^{T_n} v_{i_{n_j}}}{T_n}
-\end{aligned}
+	\overline{\mathbf{v}}_{1} = \frac{\sum_{j=1}^{T_i} \mathbf{v}_{v_{i_j}}}{T_i}
 \end{equation}
 
-Similarly, $p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n)$
-can be treated as predict each items in the same local interest,
-and it is also defined using a softmax funxtion,
+$p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i)$
+is the probability to generate the interest distribution of $v_{i_j}$
+based on items in the same local interest and the user's global interest.
+Similarly, using softmax multiclass classifier we have
 
 \begin{equation}
-\begin{aligned}
-	p(i_{n_j} | i_{n_{j-c}}, ..., i_{n_{j-1}}, i_{n_{j+1}},..., i_{n_{j+c}}, u_n) =
+	p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i) =
 	\frac
 	{
-		exp( \overline{v}_{2}^{\mathrm{T}} v_{i_{n_j}}^{'} )
+		exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{v_{i_j}}^{'} )
 	}
 	{
-		\sum_{i=1}^{V} exp( \overline{v}_{2}^{\mathrm{T}} v_{i}^{'} )
+		\sum_{k=1}^{V} exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{k}^{'} )
 	}
-\end{aligned}
 \end{equation}
 
-where $v_{i_{n_j}}^{'}$ is the output vector representation of $i_{n_j}$,
-and $\overline{v}_{2}$ is averaged input vector representation of items in the time window
-and corresponding $u_n$.
+where $\mathbf{v}_{v_{i_j}}^{'}$ is the output vector representation of $v_{i_j}$,
+$V$ is the set of the whole items,
+and $\overline{\mathbf{v}}_{2}$ is averaged input vector representation of items
+int the same local interest and corresponding global interest $u_i$.
 
 \begin{equation}
-\begin{aligned}
-	\overline{v}_{2} = \frac{ v_{i_{n_{j-c}}} + ... + v_{i_{n_{j-1}}} + 
-	v_{i_{n_{j+1}}} + ... + v_{i_{n_{j+c}}} + v_{u_n} }{2c+1}
-\end{aligned}
+	\overline{\mathbf{v}}_{2} = \frac{ \mathbf{v}_{v_{i_{j-c}}} + ... + \mathbf{v}_{v_{i_{j-1}}} + 
+	\mathbf{v}_{v_{i_{j+1}}} + ... + \mathbf{v}_{v_{i_{j+c}}} + \mathbf{v}_{u_i} }{2c+1}
 \end{equation}
 
 
 \subsection{Learning Model}
-With the help of embedding model, we can get the vector representation of users and tiems.
+With the help of embedding model, we can obtain
+the vector representation of users and items
+based on the local interest and global interest.
+We use the following notations to describe these representations:
 
-There are two important factors in most CF problems: users' interests and items' properties.
+\begin{itemize}
+	\item $\tilde{\mathbf{u}}_i$ reflects the interest distribution of the $u_i$
+	\item $\tilde{\mathbf{v}}_j$ reflects the interest distribution of the $v_j$
+	\item $D$ is the length of those representation
+\end{itemize}
+
+There are two kinds of side information in collaborative filtering:
+users' profiles and items' properties.
 Various kinds of information can be used to model these factors.
-Our model summarizes the three factors as feature vectors (denoted by
-$\alpha \in \mathbb{R}^n$, $\beta \in \mathbb{R}^m$) and predicts the preference score $\hat{r}$ as
+In some sense, the representation of users and items from the embedding model
+could be treat as a kind of side information,
+because it distinguish the similarity and difference between users and items,
+just like other side information does.
+But it doesn't reflect a actual meaning, so we call it the \textbf{latent side information}. 
+
+Inspired by svdfeature algorithm \cite{chen2012svdfeature}, we utilize the feature-based
+collaborative filtering to take advantage of the latent side information.
+First, we generate the user feature $\alpha_{i}$ and the item feature $\beta_{j}$
+for user $u_i$ and item $v_j$.
 
 \begin{equation}
-\begin{aligned}
-	\hat{r} = \sum_{i=1}^{n} \alpha_{i} b_{i}^{(u)} + \sum_{i=1}^{m} \alpha_{i} b_{i}^{(i)} +
-	\left( \sum_{i=1}^{n} \alpha_{i} \textbf{p}_{i} \right) ^ \mathrm{T}
-	\left( \sum_{i=1}^{m} \beta_{i} \textbf{q}_{i} \right)
-\end{aligned}
+\alpha_{i} = \{ OneHot(u_i), \tilde{\mathbf{u}}_i \}
+\end{equation}
+\begin{equation}
+\beta_{j} = \{OneHot(v_j), \tilde{\mathbf{v}}_j \}
+\end{equation}
+
+where $OneHot(u_i)$ is the one hot representation of $u_i$
+and $OneHot(v_j)$ is the one hot representation of $v_j$.
+
+Then we predict the rating for $u_i$ and $v_j$
+
+\begin{equation}
+\hat{r} = \sum_{i=1}^{n} \alpha_{i} b_{i}^{(u)} + \sum_{i=1}^{m} \alpha_{i} b_{i}^{(i)} +
+\left( \sum_{i=1}^{n} \alpha_{i} \textbf{p}_{i} \right) ^ \mathrm{T}
+\left( \sum_{i=1}^{m} \beta_{i} \textbf{q}_{i} \right)
 \end{equation}
 
 where $\textbf{p}_{i} \in \mathbb{R}^d$ and $\textbf{q}_{i} \in \mathbb{R}^d$
 are $d$ dimensional latent factors associated with each feature.
 $b_{i}^{(u)}$ and $b_{i}^{(i)}$ are bias parameters that directly influence the prediction.
-
-
-
-we use \cite{chen2012svdfeature}.
 
 
 \section{Experiment}
