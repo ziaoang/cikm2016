@@ -157,113 +157,121 @@ Finally, we conclude the paper and
 outline our future work in Section 5.
 
 \section{Related Work}
+In general, our work is closely related to matrix factorization,
+and neural network. We will discuss them in the following subsections.
+
 \subsection{Matrix Factoriztion}
-The importance of accurate recommendation techniques motivated by wide ranging applications
-has fuelled a great amount of academic as well as industrial research in this area \cite{ricci2011introduction}.
-Recommender systems are most often based on collaborative filtering and
-there are typically two approaches that are widely used.
-In neighborhood methods, the similarity between users based on the content
-they have consumed and rated is the basis of a new recommendation.
-A related but intrinsically more powerful approach has been the use of latent factor models.
+Matrix factorization (MF) is the most popular collaborative filtering methods,
+their success at the Netflix competition have demonstrated their strength,
+and lots of variants of it have been proposed in specific settings.
+\cite{koren2009matrix, bennett2007netflix}.
+Basically, the given ratings matrix $\mathbf{R} \in \mathbb{R}^{N*M}$
+consisting of the item preferences of the users can be decomposed as
+a product of two low dimensional matrices $\mathbf{U} \in \mathbb{R}^{N*K}$
+and $\mathbf{V} \in \mathbb{R}^{K*M}$.
+$\mathbf{U}$ could be treated as a user-interest matrix while
+$\mathbf{U}$ could be treated as a item-interest matrix.
+$K$ is the amount of interest.
+The decomposition can be carried out by a variety of methods
+ranging from SVD based approaches \cite{mazumder2010spectral}
+to the relatively new non-negative
+matrix factorization approach \cite{lee2001algorithms}.
 
-Matrix factorization (MF) is the most popular technique to derive latent factor models and
-their success at the Netflix competition have highlighted their strength \cite{koren2009matrix, bennett2007netflix}.
-For example, the given matrix $x \in \mathbb{R}^{N*M}$ consisting of the item preferences of the users
-can be decomposed as a product of two low dimensional matrices $U$ and $V$.
-The decomposition can be carried out by a variety of methods ranging from SVD based approaches \cite{mazumder2010spectral}
-to the relatively new non-negative matrix factorization approach \cite{lee2001algorithms}.
-
-One classical MF method is probabilistic matrix factorization (PMF) \cite{salakhutdinov2011probabilistic}.
+Another classical MF method is probabilistic matrix factorization
+(PMF) \cite{salakhutdinov2011probabilistic}.
 The underlying assumption behind this method is that
 the prior probability distribution of the latent factors and
 the probability of the observed ratings given the latent factors
-follows a Gaussian distribution.
+follow a Gaussian distribution.
 Many algorithms have been developed to enhance the performance of PMF,
-by designing the Bayesian versions \cite{salakhutdinov2008bayesian, xu2013fast, shi2013scmf},
-or incorporating side information, such as social relationships \cite{zhao2014leveraging, ma2011recommender}.
+by designing the Bayesian versions \cite{salakhutdinov2008bayesian, xu2013fast, shi2013scmf}.
 
-Although promising, matrix factorization methods suffer from the problem of cold-start,
+However, matrix factorization methods suffer from the cold start problem,
 i.e. what recommendations to make when a new user/item arrives in the system.
-Another problem often presented in many real world applications is data sparsity
-or reduced coverage.
+Another problem often presented in many real world applications is data sparsity.
 Incorporating side information has shown promising performance
 in collaborative filtering in such scenarios.
-Porteous et al. proposed a Bayesian matrix factorization (BMF) approach
-with side information and Dirichlet process mixtures \cite{porteous2010bayesian}.
-A variational BMF method and a hierarchical BMF method that utilizes
-side information were also proposed in \cite{kim2014scalable} and \cite{park2013hierarchical}, respectively.
-Hu et al. proposed a cross-domain triadic factorization (CDTF)
-method \cite{hu2013personalized}, which leverages the information from other domains.
-The methods discussed above are proposed for addressing recommendation
-problems.
-Recently, MF based collaborative filtering is also applied to response prediction \cite{menon2011response, li2015predicting}.
-The afore-mentioned approaches can alleviate the problem of cold start
-and data sparsity but might still suffer when the side information is sparse.
-Learning effective features is critical in matrix factorization.
-Recently, deep learning based methods have emerged as a powerful tool
-for learning representation and are widely used in many applications
-ranging from computer vision to speech recognition and machine translation.
-In this paper, our goal is to combine deep learning based methods with
-matrix factorization for collaborative filtering.
-In the next subsection, we survey the application of deep learning
-based methods for collaborative filtering.
+
+In genera, social recommendation and content recommendation
+are two main kind of side information.
+Social recommendation methods focus on using the social network
+to improve rating estimation and item recommendation.
+SoRec \cite{ma2008sorec} is proposed as a probabilistic matrix
+factorization framework which incorporates trust network information
+into user taste analysis.
+Ma \textit{et al.} \cite{ma2011recommender} also propose a matrix factorization framework
+with social regularization based on the assumption
+that users’ interests should be similar to those of their friends.
+Based on these works, Yang \textit{et al.} \cite{yang2011like}
+devise a factorbased random walk model to explain friendship connections,
+and simultaneously use a coupled latent factor model to uncover interest interactions.
+Content recommendation methods aim at utilizing item content
+to improve rating prediction and item recommendation.
+Pazzani \textit{et al.} \cite{pazzani2007content}
+proposed content based recommendation system
+which uses $tf \times idf$ method to get item representation,
+then average them to estimate user profile.
+Wang \textit{et al.} \cite{wang2011collaborative}
+proposed a Bayesian Matrix Factorization (BMF) approach
+with Latent Dirichlet Allocation (LDA) to extract topic
+information from item content.
 
 \subsection{Nerual Network}
-The application of deep learning models to the task of collaborative filtering
-is very new and there are not much attempts in this direction.
-Salakhutdinov et al. \cite{salakhutdinov2007restricted} were the first to apply deep learning to the task of collaborative filtering.
-They modified the restricted Boltzmann machines as a two-layer undirected graphical model
-consisting of binary hidden units and softmax visible units for the task of collaborative filtering.
-They designed an efficient learning procedure called the Contrastive Divergence (CD) to
-maximize an approximation to the true likelihood function.
-They also proposed a conditional RBM model and inference procedures.
-They tested the performance of the model on the Netflix dataset for movie recommendation
-and showed that their model performs well as compared to the baseline methods.
+\subsubsection{Nerual Network based Collaborative Filtering}
+Neural Networks have attracted little attention in the
+collaborative filtering community.
+Salakhutdinov \textit{et al.} \cite{salakhutdinov2007restricted} were the first
+work to tackle the Netflix challenge using Restricted Boltzmann Machines (RBM).
+They modified the RBM as a two-layer undirected graphical model
+consisting of binary hidden units and softmax visible units,
+and tested their model on the Netflix dataset and
+showed a comparable result with the start-of-the-art.
 
-Truyen et al. \cite{phung2009ordinal} proposed ordinal Boltzmann machines for collaborative filtering.
-They studied the parameterizations for handling the ordinal nature of ratings,
-and presented the integration of multiple Boltzmann machines for user-based and item-based processes.
+On music recommendation, van \textit{et al.} \cite{van2013deep}
+and wang \textit{et al.} \cite{wang2014improving}
+directly use Convolutional Neural Network (CNN)
+or Deep Belief Networks (DBN)
+to assist representation learning for content information.
+Sedhain \textit{et al.} \cite{sedhain2015autorec} and
+Strub \textit{et al.} \cite{strub2015collaborative}
+directly train Autoencoders to provide the best predicted ratings.
+Those methods report excellent results in the general case.
+However, the cold start problem is not solved.
 
-Recently, some deep learning models learn latent factors from content information
-such as raw features of audio or articles \cite{hu2014deep, ouyang2014autoencoder}.
-Wang et al. \cite{wang2014improving} utilized deep belief nets (DBN) for music recommendation,
-which unifies feature extraction and recommendation of songs in a joint framework.
-They assumed that a user has a feature vector $\beta_u$ drawn from a Gaussian prior
-and the songs have a feature vector $x_v$.
-They automatically learned the feature vectors of the songs using a deep belief network
-which is a generative probabilistic graphical model with hidden nodes and observation.
-It has millions of parameters to be learned from the training data.
-The authors used stacked layers of Restricted Boltzmann Machines
-for pretraining in an unsupervised fashion, and then employed
-the Maximum Likelihood Estimation (MLE) for supervised learning.
+Wang \textit{et al.} \cite{wang2015collaborative} 
+directly coupled matrix factorization with deep learning models,
+and proposed a hierarchical Bayesian model called
+Collaborative Deep Learning (CDL)
+which tightly couples Stacked Denoising AutoEncoders (SDA) and
+Collaborative Topic Regression (CTR) to
+solve the cold start problem.
+Li \textit{et al.} \cite{li2015deep} proposed the
+marginalized Stacked Denoising AutoEncoders (mSDA) which
+is close to CDL but more efficient and scalable.
+Meanwhile, their model can learn deep features for both items and users
+while CDL only extracts deep features for items.
 
-Oord et al. \cite{van2013deep} addressed the music recommendation problem
-using the convolutional neural networks.
-They first conducted a weighted matrix factorization to handle implicit feedback
-and obtained latent factors for all songs.
-After that they used deep learning to map audio content to those latent factors.
-In particular, they extracted local features from audio signals and
-aggregated them into a bag-of-words representation.
-Finally, the deep convolutional network was employed to map this feature representation
-to the latent factors.
-They tested their algorithm on the Million song dataset and
-showed that their model improved the recommendation performance by augmenting the audio signals.
+\subsubsection{Nerual Network based Language Model}
+Traditional language model uses a one-hot representation
+to represent each word as a feature vector,
+where these feature vectors have the same length
+as the size of vocabulary, and the position that
+corresponds to the observed word is equal to 1, and 0 otherwise.
+However, this approach often exhibits significant limitations in practical tasks,
+suffering from high dimensionality and severe data sparsity.
 
-All the previously mentioned approaches mainly modify the deep learning algorithms
-for the task of collaborative filtering and
-do not directly couple matrix factorization with deep learning models.
-Most recently, Wang et al. \cite{wang2015collaborative} proposed a hierarchical Bayesian model
-called collaborative deep learning (CDL) which tightly couples
-stacked denoising auto-encoders (SDA) and collaborative topic regression (CTR).
-This work is the closest to our work but differs from ours in many significant ways as follows -
-(i) CDL utilized a Bayesian formulation of SDA.
-The generative process of CDL consists of drawing samples for CDL uses an EM-style algorithm
-for obtaining the MAP estimates of Bayesian SDA,
-and thus it has to learn a large number of parameters.
-Our model employs a more efficient architecture, marginalized SDA (mSDA),
-which computes the parameters in closed form and is thus highly efficient and scalable.
-(ii) CDL only extracts deep features for items,
-whereas our model learns deep features for both items and users.
+Mikolov \textit{et al.} \cite{mikolov2013efficient, mikolov2013distributed}
+proposed the word2vec algorithm to address these issues.
+They take advantage of the word order in text documents,
+explicitly modeling the assumption that closer words
+in the word sequence are statistically more dependent.
+The continuous bag-of-words (CBOW) and skip-gram (SG)
+language models are highly scalable for learning word
+representations from large-scale corpora.
+Le \textit{et al.} \cite{le2014distributed} followed the above
+work and proposed the paragraph2vec algorithm to simultaneously
+learn vector representations of sentence and words
+by considering the sentence as a ``global context".
 
 \section{Our Approach}
 In this section,
@@ -567,10 +575,7 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
 
 \section{Conclusions}
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
-This is the abstract about the paper this is the abstract about the paper.
+
 
 \section{Acknowledgments}
 The work reported in this paper is supported by the National Natural Science Foundation of China Grant 61370116.
