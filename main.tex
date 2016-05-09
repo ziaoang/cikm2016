@@ -10,7 +10,8 @@
 
 \setcopyright{acmcopyright}
 
-\title{Improving Collaborative Filtering with Latent Side Information}
+\title{Improving Collaborative Filtering with\\
+Latent Time Model}
 
 \numberofauthors{1}
 \author{
@@ -27,39 +28,135 @@ Dongyan Zhao\titlenote{Corresponding author.}\\
 \maketitle
 
 \begin{abstract}
-Collaborative filtering (CF) has been widely employed within recommender systems in many real-world situations.
-Its basic assumption is that items liked by the same user would be similar or users like same items would share similar interest.
-But it not always holds because users' interest may change over time.
-If user likes two items at the same time period, there is a strong possibility that they are similar.
-But the possibility will become small if user likes they at different time point.
-In this paper, we propose a method that takes advantage of user ratings timeline to describe the time sensitive relationship between users and items.
-To reach this goal, we use a language-based algorithm to learn effective latent embeddings for users and items.
-Language model aims to extract the potential association between sentences and words, which is similar with users and items in recommender system.
-The learned embedding for users and items can be considered as a kind of side information that describes the time sensitive relationship between users and items.
-We then combine them with origin rating information to predict missing ratings in a feature-based collaborative filtering framework.
-Experimental results on three MovieLens datasets demonstrate that our approach can achieve the state-of-the-art performance.
+Collaborative filtering (CF) has been widely employed within
+recommender systems in many real-world situations.
+Its core idea is that items liked by the same user would be similar and
+users like same items would share similar interest.
+But it is not always true since users' interest changes as time goes on.
+It should be more reasonable to say that
+if two items are liked by the same user in the same time period,
+there is a strong possibility that they are similar,
+but the possibility will shrink if the user likes they in different time period.
+In this paper,
+we propose a latent time model to describe the time sensitive relationship
+and integrate it into a feature based collaborative filtering framework
+in order to improve the recommender performance.
+The latent time model learns effective latent embeddings
+for users and items in a neural network based language model.
+Language model aims to extract the potential association
+between sentences and words,
+which is similar with users and items in recommender system.
+The learned embedding for users and items can be considered as
+a kind of latent side information because its dimension doesn't
+have a actual meaning.
+Experimental results on three MovieLens datasets demonstrate that
+our approach can achieve the state-of-the-art performance.
 \end{abstract}
 
-\category{H.2.8}{Database Management}{Data Mining}
 \category{H.3.3}{Information Search and Retrieval}{Information Filtering}
-\terms{Algorithms, Experimentation, Performance}
-\keywords{Recommender System; Collaborative Filtering; Embedding Model;}
+\category{H.2.8}{Database Management}{Data Mining}
+%\terms{Algorithms, Experimentation, Performance}
+\keywords{Recommender System; Collaborative Filtering; Latent Side Information;}
 
 \section{Introduction}
-Recommender system has become more and more popular in many real-world situations, in the modern era of information overload.
-Lots of websites (e.g. Amazon, Netflix, Alibaba and Hulu) use recommender system to target customers and provide them with useful information.
-Recommender system aims to help users find the items, they are more likely to be interested in, from huge amounts of candidates.
-A widely used setting of recommendation system is to predict how a user would rate an item (such as a movie) given the past rating history of the users.
-Many classical recommendation methods have been proposed in recent years and they can be categorized into three classes:
-content-based methods, collaborative filtering (CF) based methods, and hybrid methods.
-Content-based methods \cite{pazzani2007content} make use of user profiles or product descriptions for recommendation.
-CF-based methods \cite{su2009survey} use the past activities or preferences, such as user ratings on items, without using user or product content information.
-Hybrid methods \cite{wang2011collaborative} seek to get the best of both worlds by combining content-based and CF-based methods.
-The CF based methods have been developed for many years and keep to be a hot area in both academia and industry due to their impressive performance.
-Collaborative filtering focuses on predicting the preference of one user by combining his feedback on a few items and the feedback of all other users.
-Among various CF based methods, matrix factorization (MF) models have become popular and achieves the state-of-the-art performance \cite{koren2009matrix}.
+In the modern era of information overload,
+recommender system has become more and more popular in many real-world situations.
+Recommender system aims to help users find the items,
+they are more likely to be interested in,
+from huge amounts of candidates.
+Lots of websites (e.g. Amazon, Netflix, Alibaba and Hulu) use recommender system to
+target customers and provide them with useful information.
+An excellent recommendation system can effectively increase the amount of sales.
+For instance, 80\% of movies watched on Netflix
+come from their recommender system \cite{gomez2015netflix}.
 
-\section{Relate Work}
+A widely used setting of recommender system is to
+predict the rating a user will evaluate on a new item (such as a movie)
+given the past rating history of the users.
+Lots of classical recommendation methods have been proposed
+during the last decade, and they can be categorized into two classes:
+content based methods and collaborative filtering (CF) based methods.
+Content based methods \cite{pazzani2007content} make use of
+user profiles and item descriptions for recommendation.
+CF based methods \cite{su2009survey} utilize
+the past interactions or preferences, such as user ratings on items,
+without using user or product content information.
+CF based methods focus on predicting the preference of
+one user by combining his feedback on a few items
+and the feedback of all other users.
+These methods have been developed for many years and
+keep to be a hot area in both academia and industry
+due to their impressive performance.
+
+Among various CF based methods, matrix factorization (MF) based
+collaborative filtering have become popular and
+achieves the state-of-the-art performance \cite{koren2009matrix}.
+Matrix factorization retrieves latent factors
+from the sparse matrix of ratings.
+Common latent factor techniques compute a low-rank rating matrix
+by applying Singular Value Decomposition through gradient descent
+\cite{koren2009matrix} or
+Regularized Alternative Least Square algorithm \cite{zhou2008large}.
+However, these methods are linear and cannot catch subtle factors.
+Newer algorithms were explored to face those constraints such as
+Non Linear Probabilistic Matrix Factorization \cite{pazzani2007content},
+Factorization Machines \cite{rendle2010factorization} or
+Local Low Rank Matrix Approximation \cite{lee2013local}.
+
+Effective latent factors is the most important
+core in matrix factorization based CF methods.
+In recent years, deep learning \cite{hinton2006reducing, hinton2006fast}
+has attracted a lot of attention due to its amazing performance
+to learn representations on various tasks,
+especially in computer vision and natural language processing.
+However, neural networks have attracted little attention
+in the collaborative filtering community.
+With large-scale data and rich-side information available,
+it is now practicable to learn latent factors
+through deep learning.
+Deep learning algorithms like Restricted Botzmann Machines (RBM)
+\cite{salakhutdinov2007restricted},
+Convolutional Neural Networks (CNN) \cite{wang2014improving} and
+Stacked Denosing AutoEncoder (SDEA) \cite{wang2015collaborative}
+are used directly for the task of collaborative filtering.
+
+In this paper, we propose a latent time model and
+integrate it into a feature based collaborative filtering framework.
+Our latent time model takes advantage of the ratings time line
+to address the problem that users' interest changes over time.
+We first embed users and items into a low-dimensionality space,
+and change the interest similarity over time into spacial distance.
+In particular, we extract time sensitive interest distribution
+of users and items via this embedding model.
+Then, by leveraging a feature bases collaborative filtering framework,
+it is quite natural to integrate the latent time model
+into the whole prediction framework via side information pattern.
+Latent time model can help describe the interest similarity of
+users and items from an angle of time.
+
+The main contributions of this paper include:
+(1) we propose a latent time model to describe the interest
+drifting for users on items over time and
+use a neural network based language model to extract
+time sensitive interest distribution of users and items.
+(2) we treat time sensitive interest distribution of users and items
+as a kind of side information, and integrate them into
+a feature-based collaborative filtering framework.
+(3) we perform a set of experiments on three public
+MovieLens dataset to compare our proposed method
+with the baseline systems.
+And, the experimental results demonstrate that
+our proposed approach can achieve the state-of-the-art performance.
+
+The rest of the paper is organized as follows.
+Section 2 gives an overview of the related work.
+Then, we describe our latent time model in Section 3.
+The experimental results as well as the comparisons with
+the-state-of-arts are shown in Section 4.
+Finally, we conclude the paper and
+outline our future work in Section 5.
+
+\section{Related Work}
 \subsection{Matrix Factoriztion}
 The importance of accurate recommendation techniques motivated by wide ranging applications
 has fuelled a great amount of academic as well as industrial research in this area \cite{ricci2011introduction}.
