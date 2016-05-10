@@ -525,10 +525,31 @@ $b_{i}^{(u)}$ and $b_{i}^{(i)}$ are bias parameters that directly influence the 
 
 \section{Experiment}
 
-\subsection{Benchmark Models}
-libmf \cite{chin2015fast}
+\subsection{Baseline Models}
+We use two popular techniques that are widely used
+in both academia and industry as our baseline models.
 
-libfm \cite{rendle2012factorization}
+\textbf{LibMF} is an open source tool
+for approximating an incomplete matrix using the product of
+two matrices in a latent space.
+It provides solvers for real-valued matrix factorization,
+binary matrix factorization, and one-class matrix factorization.
+It also supports parallel computation in a multi-core machine
+using CPU instructions (e.g., SSE) to accelerate vector operations.
+Its paper \cite{chin2015fast} won the best paper award
+in RecSys 2013.
+
+Factorization machines (FM) are a generic approach that
+allows to mimic most factorization models by feature engineering.
+This way, factorization machines combine the generality of
+feature engineering with the superiority of factorization models
+in estimating interactions between categorical variables of large domain.
+\textbf{LibFM} \cite{rendle2012factorization} is a software implementation
+for factorization machines that features
+Stochastic Gradient Descent (SGD) and
+Alternating Least Squares (ALS) optimization as well as
+Bayesian inference using Markov Chain Monte Carlo (MCMC).
+We select ALS optimization in our baseline experiments.
 
 \subsection{Dataset}
 We conduct experiments on three benchmark datasets MovieLens-1M, MovieLens-10M and MovieLens-20M
@@ -572,6 +593,22 @@ $\hat{R_{ij}}$ denotes the corresponding predicted rating,
 and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
 
+
+
+\begin{table*}[htpb]
+	\centering
+	\caption{MSRE}
+	\label{tab:msre}
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M} \\
+		\hline
+		LibMF & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 \\
+		LibFM & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 \\
+		LTM   & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 & 0.8526 $\pm$ 2.4e-3 \\
+		\hline
+	\end{tabular}
+\end{table*}
 
 
 \section{Conclusions}
