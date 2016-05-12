@@ -11,7 +11,7 @@
 \setcopyright{acmcopyright}
 
 \title{Improving Collaborative Filtering with\\
-Global-Local Interest Model}
+Long-Short Interest Model}
 
 \numberofauthors{1}
 \author{
@@ -30,36 +30,30 @@ Dongyan Zhao\titlenote{Corresponding author.}\\
 \begin{abstract}
 Collaborative filtering (CF) has been widely employed within
 recommender systems in many real-world situations.
-Its core idea is that items liked by the same user would be similar and
+The basic assumption of CF is that items liked by the same user would be similar and
 users like same items would share similar interest.
-But it is not always true since users' interest changes as time goes on.
-It should be more reasonable to say that
-if two items are liked by the same user in the same time period,
+But it is not always true since the user's interest changes over time.
+It should be more reasonable to assume that
+if these items are liked by the same user in the same time period,
 there is a strong possibility that they are similar,
 but the possibility will shrink if the user likes they in different time period.
-In this paper,
-we propose a latent time model to describe the time sensitive relationship
-and integrate it into a feature based collaborative filtering framework
-in order to improve the recommender performance.
-The latent time model learns effective latent embeddings
-for users and items in a neural network based language model.
-Language model aims to extract the potential association
-between sentences and words,
-which is similar with users and items in recommender system.
-The learned embedding for users and items can be considered as
-a kind of latent side information because its dimension doesn't
-have a actual meaning.
+In this paper, we propose a long-short interest model (LSIM) based on
+the new assumption to improve collaborative filtering.
+In special, we introduce a neural network based language model
+to extract the sequential features on user's preference over time.
+Then, we integrate the sequential features to solve the rating prediction task
+in a feature based collaborative filtering framework.
 Experimental results on three MovieLens datasets demonstrate that
 our approach can achieve the state-of-the-art performance.
 \end{abstract}
 
 \category{H.3.3}{Information Search and Retrieval}{Information Filtering}
 \category{H.2.8}{Database Management}{Data Mining}
-\keywords{Recommender System; Collaborative Filtering; Latent Side Information;}
+\keywords{Recommender System; Collaborative Filtering; Long-Short Interest Model;}
 
 \section{Introduction}
 In the modern era of information overload,
-recommender system has become more and more popular in many real-world situations.
+recommender system (RS) has become more and more popular in many real-world situations.
 Recommender system aims to help users find the items,
 they are more likely to be interested in,
 from huge amounts of candidates.
@@ -69,108 +63,97 @@ An excellent recommendation system can effectively increase the amount of sales.
 For instance, 80\% of movies watched on Netflix
 come from their recommender system \cite{gomez2015netflix}.
 
-A widely used setting of recommender system is to
+A widely used setting of recommender system \cite{ricci2011introduction} is to
 predict the rating a user will evaluate on a new item (such as a movie)
 given the past rating history of the users.
 Lots of classical recommendation methods have been proposed
 during the last decade, and they can be categorized into two classes:
-content based methods and collaborative filtering (CF) based methods.
-Content based methods \cite{pazzani2007content} make use of
-user profiles and item descriptions for recommendation.
-CF based methods \cite{su2009survey} utilize
-the past interactions or preferences, such as user ratings on items,
-without using user or product content information.
-CF based methods focus on predicting the preference of
-one user by combining his feedback on a few items
-and the feedback of all other users.
-These methods have been developed for many years and
-keep to be a hot area in both academia and industry
-due to their impressive performance.
-
-Among various CF based methods, matrix factorization (MF) based
-collaborative filtering have become popular and
-achieves the state-of-the-art performance \cite{koren2009matrix}.
-Matrix factorization retrieves latent factors
-from the sparse matrix of ratings.
-Common latent factor techniques compute a low-rank rating matrix
-by applying Singular Value Decomposition through gradient descent
-\cite{koren2009matrix} or
-Regularized Alternative Least Square algorithm \cite{zhou2008large}.
-However, these methods are linear and cannot catch subtle factors.
-Newer algorithms were explored to face those constraints such as
-Non Linear Probabilistic Matrix Factorization \cite{pazzani2007content},
-Factorization Machines \cite{rendle2010factorization} or
-Local Low Rank Matrix Approximation \cite{lee2013local}.
+content based methods and collaborative filtering based methods.
+Content based methods \cite{pazzani2007content} take advantage of
+user profiles and item properties for recommendation.
+While collaborative filtering based approaches \cite{su2009survey} utilize
+the past interactions or preferences, such as users' ratings on items,
+without using user or product content information for recommendation.
+Collaborative filtering based approaches have attracted more attention
+due to their impressive performance, and developed for many years and
+keep to be a hot area in both academia and industry.
 
 \begin{figure}[htbp]
-	\centering
-	\includegraphics[scale=0.7]{images/example.pdf}
-	\caption{A Example for Local Interest and Global Interest}
-	\label{fig:example}
+    \centering
+    \includegraphics[scale=0.7]{images/example.pdf}
+    \caption{The preference records of user whose id is $5988$ in MovieLens-1M dataset,
+    which are sorted by their rated time.}
+    \label{fig:example}
 \end{figure}
 
-Effective latent factors is the most important
-core in matrix factorization based CF methods.
-In recent years, deep learning \cite{hinton2006reducing, hinton2006fast}
-has attracted a lot of attention due to its amazing performance
-to learn representations on various tasks,
-especially in computer vision and natural language processing.
-However, neural networks have attracted little attention
-in the collaborative filtering community.
-With large-scale data and rich-side information available,
-it is now practicable to learn latent factors
-through deep learning.
-Deep learning algorithms like Restricted Botzmann Machines (RBM)
-\cite{salakhutdinov2007restricted},
-Convolutional Neural Networks (CNN) \cite{wang2014improving} and
-Stacked Denosing AutoEncoder (SDEA) \cite{wang2015collaborative}
-are used directly for the task of collaborative filtering.
+Collaborative filtering assumes that items liked by the same user would be similar and
+users like same items would share similar interest.
+However, it is not always true because the user's interest changes over time.
+For example, given a user in MovieLens-1M dataset whose id is $5988$,
+Figure \label{fig:example} shows the movies he watched sorted by the rating time.
+We can find that this user liked watching comedy movies in April 2004 and
+changed to love watching drama movies in June 2004.
+Thses movies are going to be treated similar in conventional collaborative filtering,
+but they are not in actual.
+A more reasonable assumption, aka long-short interest assumption, should be that
+items liked by the same user in the same time period have a higher possibility
+to be similar than items liked by the same user in different time period.
 
-In this paper, we propose a latent time model and
-integrate it into a feature based collaborative filtering framework.
-Our latent time model takes advantage of the ratings time line
-to address the problem that users' interest changes over time.
-We first embed users and items into a low-dimensionality space,
-and change the interest similarity over time into spacial distance.
-In particular, we extract time sensitive interest distribution
-of users and items via this embedding model.
-Then, by leveraging a feature bases collaborative filtering framework,
-it is quite natural to integrate the latent time model
-into the whole prediction framework via side information pattern.
-Latent time model can help describe the interest similarity of
-users and items from an angle of time.
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[scale=0.38]{images/example2.pdf}
+    \caption{Paragraph2vec learns vector representations of sentences and words
+    based on the word order
+    while LSIM extracts sequential features of users and items
+    based on the rating order.
+    }
+    \label{fig:example2}
+\end{figure*}
+
+Inspired by paragraph2vec algorithm \cite{le2014distributed} for
+learning vector representations of words which take advantage of
+a word order observed in a sentence,
+we introduce a long-short interest model (LSIM) to extract sequential features
+of users and items based on the new assumption.
+As illustrated in Figure \ref{fig:example2}, user is simliar with the sentence,
+both of them contains a sequence follow some order,
+and items are similar with words because both of them follow the law
+that the more close they are, the more similar they are.
+To verify the effectiveness of the learned sequential features of users
+and items, we integrate them as side information to solve the rating prediction task
+in a feature based collaborative filtering framework.
 
 The main contributions of this paper include:
-(1) we propose a latent time model to describe the interest
-drifting for users on items over time and
-use a neural network based language model to extract
-time sensitive interest distribution of users and items.
-(2) we treat time sensitive interest distribution of users and items
-as a kind of side information, and integrate them into
-a feature-based collaborative filtering framework.
-(3) we perform a set of experiments on three public
-MovieLens dataset to compare our proposed method
-with the baseline systems.
-And, the experimental results demonstrate that
-our proposed approach can achieve the state-of-the-art performance.
+(1) We introduce a long-short interest model (LSIM) to extract sequential features
+of users and items based on the long-short interest assumption.
+(2) We demonstrate the effectiveness of the sequential features
+via integrating them as side information to solve the rating prediction task.
+(3) Experiments on three public MovieLens shows LSIM can achieve the state-of-the-art performance.
 
-The rest of the paper is organized as follows.
-Section 2 gives an overview of the related work.
-Then, we describe our latent time model in Section 3.
-The experimental results as well as the comparisons with
-the-state-of-arts are shown in Section 4.
-Finally, we conclude the paper and
-outline our future work in Section 5.
+The rest of the paper is organized as follows. Section 2 gives an overview of the related work.
+Then, we describe our long-short interest model and the feature based collaborative filtering
+framework in Section 3. The experimental results as well as the comparisons with
+baseline system are shown in Section 4.
+Finally, we conclude the paper and outline our future work in Section 5.
 
 \section{Related Work}
-In general, our work is closely related to matrix factorization,
-and neural network. We will discuss them in the following subsections.
+Our work is closely related to collaborative filtering and
+neural network language model.
+We will discuss them in the following subsections.
 
-\subsection{Matrix Factoriztion}
-Matrix factorization (MF) is the most popular collaborative filtering methods,
-their success at the Netflix competition have demonstrated their strength,
-and lots of variants of it have been proposed in specific settings.
-\cite{koren2009matrix, bennett2007netflix}.
+\subsection{Collaborative Filtering}
+Collaborative filtering based methods can mainly divided into three categories:
+user-based collaborative filtering, item-based collaborative filtering and
+model-based collaborative filtering.
+User-based collaborative filtering \cite{resnick1994grouplens} recommends
+items liked by users who are simliar with you
+while item-based collaborative filtering \cite{sarwar2001item} aims to
+recommend items similar with ones you liked in the past.
+Matrix factorization (MF) is the most popular model-based collaborative filtering methods,
+their success at the Netflix competition \cite{koren2009matrix, bennett2007netflix}
+have demonstrated their amazing strength,
+and lots of variants of it have been proposed in the following works.
+
 Basically, the given ratings matrix $\mathbf{R} \in \mathbb{R}^{N*M}$
 consisting of the item preferences of the users can be decomposed as
 a product of two low dimensional matrices $\mathbf{U} \in \mathbb{R}^{N*K}$
@@ -179,105 +162,73 @@ $\mathbf{U}$ could be treated as a user-interest matrix while
 $\mathbf{U}$ could be treated as a item-interest matrix.
 $K$ is the amount of interest.
 The decomposition can be carried out by a variety of methods
-ranging from SVD based approaches \cite{mazumder2010spectral}
-to the relatively new non-negative
-matrix factorization approach \cite{lee2001algorithms}.
+such as singular value decomposition (SVD) based approaches \cite{mazumder2010spectral},
+non-negative matrix factorization approach \cite{lee2001algorithms}
+and regularized alternative least square (ALS) algorithm \cite{zhou2008large}.
+Meanwhile, non-linear algorithms are proposed to catch subtle factors,
+such as Non Linear Probabilistic Matrix Factorization \cite{lawrence2009non},
+Factorization Machines \cite{rendle2010factorization} and
+Local Low Rank Matrix Approximation \cite{lee2013local}.
+However, these mothodes group users and treat items they rated equally,
+which will lose the sequential features to describe the long-short interest.
 
-Another classical MF method is probabilistic matrix factorization
-(PMF) \cite{salakhutdinov2011probabilistic}.
-The underlying assumption behind this method is that
-the prior probability distribution of the latent factors and
-the probability of the observed ratings given the latent factors
-follow a Gaussian distribution.
-Many algorithms have been developed to enhance the performance of PMF,
-by designing the Bayesian versions \cite{salakhutdinov2008bayesian, xu2013fast, shi2013scmf}.
-
-However, matrix factorization methods suffer from the cold start problem,
+Matrix factorization methods suffer from the cold start problem,
 i.e. what recommendations to make when a new user/item arrives in the system.
 Another problem often presented in many real world applications is data sparsity.
 Incorporating side information has shown promising performance
 in collaborative filtering in such scenarios.
+In recent years, deep learning \cite{hinton2006reducing, hinton2006fast}
+has attracted a lot of attention due to its amazing performance
+to learn representations on various tasks,
+especially in computer vision and natural language processing.
+Hence, some works make use of deep learning to learn effective
+features from side information to improve the performance of recommender system,
+such as \cite{salakhutdinov2007restricted, van2013deep, wang2015collaborative, li2015deep}.
 
-In genera, social recommendation and content recommendation
-are two main kind of side information.
-Social recommendation methods focus on using the social network
-to improve rating estimation and item recommendation.
-SoRec \cite{ma2008sorec} is proposed as a probabilistic matrix
-factorization framework which incorporates trust network information
-into user taste analysis.
-Ma \textit{et al.} \cite{ma2011recommender} also propose a matrix factorization framework
-with social regularization based on the assumption
-that users’ interests should be similar to those of their friends.
-Based on these works, Yang \textit{et al.} \cite{yang2011like}
-devise a factorbased random walk model to explain friendship connections,
-and simultaneously use a coupled latent factor model to uncover interest interactions.
-Content recommendation methods aim at utilizing item content
-to improve rating prediction and item recommendation.
-Pazzani \textit{et al.} \cite{pazzani2007content}
-proposed content based recommendation system
-which uses $tf \times idf$ method to get item representation,
-then average them to estimate user profile.
-Wang \textit{et al.} \cite{wang2011collaborative}
-proposed a Bayesian Matrix Factorization (BMF) approach
-with Latent Dirichlet Allocation (LDA) to extract topic
-information from item content.
-
-\subsection{Nerual Network}
-\subsubsection{Nerual Network based Collaborative Filtering}
-Neural Networks have attracted little attention in the
-collaborative filtering community.
+Neural Networks have attracted little attention in the collaborative filtering community.
 Salakhutdinov \textit{et al.} \cite{salakhutdinov2007restricted} were the first
 work to tackle the Netflix challenge using Restricted Boltzmann Machines (RBM).
 They modified the RBM as a two-layer undirected graphical model
 consisting of binary hidden units and softmax visible units,
 and tested their model on the Netflix dataset and
 showed a comparable result with the start-of-the-art.
-
-On music recommendation, van \textit{et al.} \cite{van2013deep}
-and wang \textit{et al.} \cite{wang2014improving}
-directly use Convolutional Neural Network (CNN)
-or Deep Belief Networks (DBN)
-to assist representation learning for content information.
-Sedhain \textit{et al.} \cite{sedhain2015autorec} and
-Strub \textit{et al.} \cite{strub2015collaborative}
-directly train Autoencoders to provide the best predicted ratings.
-Those methods report excellent results in the general case.
-However, the cold start problem is not solved.
-
+On music recommendation, Van \textit{et al.} \cite{van2013deep}
+directly use Convolutional Neural Network (CNN) to learn effective representations
+of songs and use them in content-based collaborative filtering framework.
 Wang \textit{et al.} \cite{wang2015collaborative} 
 directly coupled matrix factorization with deep learning models,
-and proposed a hierarchical Bayesian model called
-Collaborative Deep Learning (CDL)
-which tightly couples Stacked Denoising AutoEncoders (SDA) and
-Collaborative Topic Regression (CTR) to
-solve the cold start problem.
-Li \textit{et al.} \cite{li2015deep} proposed the
-marginalized Stacked Denoising AutoEncoders (mSDA) which
-is close to CDL but more efficient and scalable.
+and proposed a hierarchical Bayesian model called Collaborative Deep Learning (CDL)
+which tightly couples Stacked Denoising AutoEncoders (SDA) \cite{vincent2008extracting} and
+Collaborative Topic Regression (CTR) \cite{wang2011collaborative} to solve the cold start problem.
+Li \textit{et al.} \cite{li2015deep} proposed a generate learning framework
+to combine rating matrix and side information, they used 
+Probabilistic matrix factorization (PMF) \cite{salakhutdinov2011probabilistic} and
+marginalized Stacked Denoising AutoEncoders (mSDA) \cite{chen2012marginalized}
+in their approach, which is close to CDL but more efficient and scalable.
 Meanwhile, their model can learn deep features for both items and users
 while CDL only extracts deep features for items.
+In our work, although sequential features learned by LSIM are used as side information
+in the feature based collaborative framework, but actually they aims to describe
+the long-short interest, and cann't be utilized to solve the cold start problem.
 
-\subsubsection{Nerual Network based Language Model}
-Traditional language model uses a one-hot representation
-to represent each word as a feature vector,
-where these feature vectors have the same length
-as the size of vocabulary, and the position that
-corresponds to the observed word is equal to 1, and 0 otherwise.
-However, this approach often exhibits significant limitations in practical tasks,
-suffering from high dimensionality and severe data sparsity.
+\subsection{Nerual Network Language Model}
+Traditional language model uses a one-hot representation to represent each word
+as a feature vector, where these feature vectors have the same length as the size
+of vocabulary, and the position that corresponds to the observed word is equal to 1,
+and 0 otherwise. However, this approach often exhibits significant limitations
+in practical tasks, suffering from high dimensionality and severe data sparsity.
 
-Mikolov \textit{et al.} \cite{mikolov2013efficient, mikolov2013distributed}
-proposed the word2vec algorithm to address these issues.
-They take advantage of the word order in text documents,
-explicitly modeling the assumption that closer words
-in the word sequence are statistically more dependent.
-The continuous bag-of-words (CBOW) and skip-gram (SG)
-language models are highly scalable for learning word
-representations from large-scale corpora.
-Le \textit{et al.} \cite{le2014distributed} followed the above
-work and proposed the paragraph2vec algorithm to simultaneously
-learn vector representations of sentence and words
-by considering the sentence as a ``global context".
+Mikolov \textit{et al.} \cite{mikolov2013efficient, mikolov2013distributed} proposed
+the word2vec algorithm to address these issues. They take advantage of the word order
+in text documents, explicitly modeling the assumption that closer words in the word
+sequence are statistically more dependent.
+The continuous bag-of-words (CBOW) and skip-gram (SG) language models are highly
+scalable for learning word representations from large-scale corpora.
+Le \textit{et al.} \cite{le2014distributed} followed the above work and proposed
+the paragraph2vec algorithm to simultaneously learn vector representations of sentence
+and words by considering the sentence as a ``global context".
+Our LSTM aims to simultaneously learn vector representations of user
+and items by considering the user as a ``global context", correspondingly.
 
 \section{Our Approach}
 In this section,
@@ -363,7 +314,7 @@ items in different local interest.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[scale=0.6]{images/embedding.pdf}
+	\includegraphics[scale=0.5]{images/embedding.pdf}
 	\caption{A Example for Local Interest and Global Interest}
 	\label{fig:embedding}
 \end{figure}
