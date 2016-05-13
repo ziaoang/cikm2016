@@ -221,20 +221,22 @@ in practical tasks, suffering from high dimensionality and severe data sparsity.
 Mikolov \textit{et al.} \cite{mikolov2013efficient, mikolov2013distributed} proposed
 the word2vec algorithm to address these issues. They take advantage of the word order
 in text documents, explicitly modeling the assumption that closer words in the word
-sequence are statistically more dependent.
+sequence are statistically more dependent, and have generalized the classic n-gram
+language models by using continuous variables to represent words in a vector space.
 The continuous bag-of-words (CBOW) and skip-gram (SG) language models are highly
 scalable for learning word representations from large-scale corpora.
 Le \textit{et al.} \cite{le2014distributed} followed the above work and proposed
 the paragraph2vec algorithm to simultaneously learn vector representations of sentence
 and words by considering the sentence as a ``global context".
-Our LSTM aims to simultaneously learn vector representations of user
-and items by considering the user as a ``global context", correspondingly.
+Our long-short interest model shares similar idea with paragraph2vec algorithm,
+but we aim to simultaneously learn vector representations of user and items
+correspondingly by considering the user as a ``global context".
 
 \section{Our Approach}
 In this section,
-we first describe the definition of the task to be solved and
-the notation we are going to use in this paper. 
-Then we introduce our embedding model to extract the relationship
+we first describe the definition of the rating prediction task and
+the notation we are going to use in this paper.
+Then we introduce our long-short interest model to extract the relationship
 between users and items based on the local interest and global interest.
 In the last, we utilize the embedding information as pseudo side information
 in the machine learning model to do the final prediction.
@@ -553,10 +555,10 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
 		\hline
 		LibMF      & 0.8554 $\pm$ 0.0013 & 0.8090 $\pm$ 0.0004 & 0.8023 $\pm$ 0.0004 & 0.8630 $\pm$ 0.0002 \\
+		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 & \\
+		LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 & \\
 		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 & 0.8406 $\pm$ 0.0001 \\
-		LibFM-SGD  &  &  &  & \\
-		LibFM-MCMC &  &  &  & \\
-		LTM        &  &  &  & \\
+		LSIM       &  &  &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
@@ -570,10 +572,10 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
 		\hline
 		LibMF      & 0.6816 $\pm$ 0.0008 & 0.6311 $\pm$ 0.0003 & 0.6229 $\pm$ 0.0004 & 0.6822 $\pm$ 0.0002 \\
+		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 & \\
+		LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 & \\
 		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 & 0.6481 $\pm$ 0.0002 \\
-		LibFM-SGD  &  &  &  & \\
-		LibFM-MCMC &  &  &  & \\
-		LTM        &  &  &  & \\
+		LSIM       &  &  &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
