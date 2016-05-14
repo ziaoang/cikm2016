@@ -225,6 +225,9 @@ sequence are statistically more dependent, and have generalized the classic n-gr
 language models by using continuous variables to represent words in a vector space.
 The continuous bag-of-words (CBOW) and skip-gram (SG) language models are highly
 scalable for learning word representations from large-scale corpora.
+The word2vec algorithm breaks the semantic gap between words.
+For example, ``trade'' and ``deal'' are totally different words in the one-hot representation,
+but they are similar in word2vec distribution representation.
 Le \textit{et al.} \cite{le2014distributed} followed the above work and proposed
 the paragraph2vec algorithm to simultaneously learn vector representations of sentence
 and words by considering the sentence as a ``global context".
@@ -236,10 +239,10 @@ correspondingly by considering the user as a ``global context".
 In this section,
 we first describe the definition of the rating prediction task and
 the notation we are going to use in this paper.
-Then we introduce our long-short interest model to extract the relationship
-between users and items based on the local interest and global interest.
-In the last, we utilize the embedding information as pseudo side information
-in the machine learning model to do the final prediction.
+Then we introduce our long-short interest model to extract the sequential features
+of users and items based on the long-short interest assumption.
+In the last, we utilize the sequential features as side information
+in the feature based collaborative filtering framework to make the final prediction.
 
 \subsection{Problem Definition}
 Given $N$ users and $M$ items, the rating $r_{ij}$ is the rating given by
@@ -247,7 +250,7 @@ the $i^{th}$ user for the $j^{th}$ item.
 In the common real-world situations,
 users usually rate on a fraction of items, not on the whole items.
 Therefore,
-those ratings entail a sparse matrix $\mathbf{R} \in \mathbb{R}^{N \times M}$.
+those ratings entail a big and sparse matrix $\mathbf{R} \in \mathbb{R}^{N \times M}$.
 The goal of recommender system is to make a prediction on the missing ratings.
 Based on that, we will know the preference of a user on the items he never rates,
 and recommend high score items to him.
@@ -262,82 +265,102 @@ are two matrices of rank $K$ encoding a dense representation of the users and it
 \begin{aligned}
 	\argmin_{\mathbf{U},\mathbf{V}}
 	\sum_{(i,j) \in \mathcal{K}(\mathbf{R})}
-	( r_{ij} - \overline{\mathbf{u}}_i^{\mathrm{T}} \overline{\mathbf{v}}_j ) ^ 2 +
-	\lambda ( \left\| \overline{\mathbf{u}}_i \right\|_{Fro}^2 +
-	\left\| \overline{\mathbf{v}}_j \right\|_{Fro}^2 )
+	&( r_{ij} - \vec{\mathbf{u}}_i^{\mathrm{T}} \vec{\mathbf{v}}_j ) ^ 2 + \\
+	&\lambda ( \left\| \vec{\mathbf{u}}_i \right\|_{Fro}^2 +
+	\left\| \vec{\mathbf{v}}_j \right\|_{Fro}^2 )
 \end{aligned}
 \end{equation}
 
 where $\mathcal{K}(\mathbf{R})$ is the set of indices of known ratings,
-$\overline{\mathbf{u}}_i$ and $\overline{\mathbf{v}}_j$
+$\vec{\mathbf{u}}_i$ and $\vec{\mathbf{v}}_j$
 are the corresponding line vectors of $\mathbf{U}$ and $\mathbf{V}$,
 $\lambda$ is the coefficient that controls the influence of L2 regularization,
 and $\left\| \cdot \right\|_{Fro}$ is the Frobenius norm.
 
-Matrix Factorization techniques, as the main thrust behind collaborative filtering,
-have been developed for many years and keep to be a hot area in both academia and industry.
-But it suffers from the problem of cold-start,
-i.e. what recommendations to make when a new user or a new item arrives in the system
-with the fact that their have no ratings information.
-Meanwhile, when the ratings information is too sparse,
-the performance of matrix factorization will decrease rapidly.
+Table \ref{tab:notations} summarizes the symbols used in our approach.
+In the next section, we will propose a long-short interest model
+to extract sequential features of users and items based on the long-short interest auumption.
 
-Side information, such as the users' profiles and the items' properties,
-is a effective resource to remit this problem.
-In the next section, we will propose a embedding model
-to extract latent side information based on the local interest and global interest.
+\begin{table}[htpb]
+    \centering
+    \caption{Summary of notations.}
+    \label{tab:notations}
+    \begin{tabular}{|c|l|}
+        \hline
+        \textbf{Notation} & \textbf{Description} \\
+        \hline
+        $N$ & Number of users \\
+        $M$ & Number of items \\
+        $K$ & Dimension of latent factors \\
+        $D$ & Dimension of sequential features \\
+        $\mathbf{R} \in \mathbb{R}^{N \times M}$ & Rating matrix \\
+        $\mathbf{U} \in \mathbb{R}^{N \times K}$ & Latent factors of users \\
+        $\mathbf{V} \in \mathbb{R}^{M \times K}$ & Latent factors of items \\
+        $\mathbf{X} \in \mathbb{R}^{N \times D}$ & sequential features of users \\
+        $\mathbf{Y} \in \mathbb{R}^{M \times D}$ & sequential features of items \\
+        \hline
+    \end{tabular}
+\end{table}
 
-\subsection{Embedding Model}
-Collaborative Filtering aims at estimating the ratings
-a user would have given to all other items he never interact with
-by using the ratings of all the other users.
-The basic assumption of collaborative filtering is that
-items liked by the same user would be similar
-or users like same items would share similar interest.
-However, in real-world situations,
-it is not always hold because users' interest may change over
-a long time period.
+\subsection{Long-short Interest Model}
+Collaborative filtering aims at estimating the ratings a user is going to give to
+all other items he never interact with by using the ratings of all the other users.
+The basic assumption of collaborative filtering is that items liked by the same user
+would be similar or users like same items would share similar interest.
+However, in real-world situations, it is not always true because users' interest
+may change over a long time period.
 Meanwhile, the interest distribution of a user in a fixed time period
 are stable and don't change too much.
 
-To describe the phenomenon that interest changes over time,
-we propose the definition of \textbf{local interest} and \textbf{global interest}.
+To describe this phenomenon that interest changes over a long time period but
+keep stable in a short time period,
+we propose the definition of \textbf{long interest} and \textbf{short interest}.
 
 \begin{itemize}
-\item \textbf{local interest} reflects the interest distribution of a user
-in a short and fixed time period.
-\item \textbf{global interest} reflects the interest distribution of a user
-in a long time period.
+\item \textbf{long interest} reflects the interest distribution of a user
+in a long time period, and it is reflected in the whole items list of the user's preference.
+\item \textbf{short interest} reflects the interest distribution of a user
+in a short time period, and it is reflected in a fraction of the whole items list of
+the user's preference in a fixed length sliding window.
 \end{itemize}
 
-And we believe that item in the same local interest (i.e. in the same time period)
-of a user have a higher possibility to be similar than
-items in different local interest.
+Under this definition, each user will have a long interest, and each long interest will
+correspond several short interest. At the same time,
+we propose two assumption based on long interest and short interest.
+
+\begin{enumerate}
+\item items liked in the same short interest of the same long interest have a higher
+possibility to be similar than ones liked in different short interest of the same long interest.
+\item the more times items show in the same short interest of different long interest,
+the higher possibility they are similar.
+\end{enumerate}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=0.5]{images/embedding.pdf}
-	\caption{A Example for Local Interest and Global Interest}
+	\caption{A Example for Short Interest and Long Interest}
 	\label{fig:embedding}
 \end{figure}
 
-For example, as illustrated in the left of Figure \ref{fig:embedding},
-given a certain $\mathbf{user}$, we can see he interact with five items
-($\mathbf{item1}$ to $\mathbf{item5}$) in the last.
-They are list on the time line according to the time order.
-Let's assume that the time window size \footnote{We use time window to judge time proximity
-instead of extract timestamp here for convenience.} is set to $2$,
-Therefore $\mathbf{item1}$ and $\mathbf{item2}$ are in the same local interest,
-$\mathbf{item2}$ and $\mathbf{item3}$ are in the same local interest, and so on.
-Meanwhile $\mathbf{item2}$ and $\mathbf{item5}$ are in different local interest.
-That means $\mathbf{item2}$ has a higher possibility to be similar with $\mathbf{item1}$
-than $\mathbf{item5}$.
+For example, as illustrated in the top of Figure \ref{fig:embedding},
+given a certain $\mathbf{user}$, we can see five items
+$\mathbf{item1}$, $\mathbf{item2}$, ..., $\mathbf{item5}$, he liked in the last,
+are list on the timeline according to the liked time order.
+Those items compose the long interest of this $\mathbf{user}$.
+Let's assume that the time window size of short interest is set to $2$,
+That means $\mathbf{item1}$ and $\mathbf{item2}$ are in the same short interest,
+$\mathbf{item2}$ and $\mathbf{item3}$ are in the same short interest, and so on.
+Meanwhile $\mathbf{item2}$ and $\mathbf{item5}$ are in different short interest.
+Therefore $\mathbf{item2}$ has a higher possibility to be similar with $\mathbf{item1}$
+than $\mathbf{item5}$ based on our long-short interest assumption.
 
-To describe the similarity preference in mathematical sense,
-we project users and items into a low-dimensionality space,
-and change the interest similarity into spacial distance.
-$\mathbf{item2}$ is close to $\mathbf{item1}$ and far away from $\mathbf{item5}$
-in the low-dimensionality space, as shown in the right of Figure \ref{fig:example}.
+In special, we embed users and items into a low dimensional space
+to characterize these similarity in mathematical sense.
+We use European space distance between items in this low dimensional space
+to represent the similarity between them.
+Hence, $\mathbf{item2}$ has a higher possibility to be similar with $\mathbf{item1}$
+than $\mathbf{item5}$ means $\mathbf{item2}$ is close to $\mathbf{item1}$ and far away from $\mathbf{item5}$
+in this low dimensional space, as shown in the bottom of Figure \ref{fig:embedding}.
 
 \begin{figure}[htbp]
 	\centering
@@ -347,208 +370,311 @@ in the low-dimensionality space, as shown in the right of Figure \ref{fig:exampl
 \end{figure}
 
 Inspired by paragraph2vec algorithm \cite{le2014distributed} for learning
-vector representations of words which take advantage of
-a word order observed in a sentence,
-we choose to use neural network based language model
-to embed this interest similarity information.
+vector representations of words which take advantage of a word order observed in a sentence,
+we introduce a neural network based language model to carry out the embedding of sequential features.
 The embedding model simultaneously learns vector representations of users and items
 by considering the user as a global context,
 and the architecture of the embedding model is illustrated in Figure \ref{fig:doc2vec}.
 
 The training data set was derived from users interaction timeline $T$,
-which comprises users $u_i (i=1,2,...,N)$ and their interacted items ordered by the interacted time,
-$v_{i_1}$, $v_{i_2}$, ..., $v_{i_{L_i}}$,
-where $L_i$ denotes number of items interacted by user $u_i$,
+which comprises users $x_i (i=1,2,...,N)$ and their interacted items ordered by the interacted time,
+$y_{i_1}$, $y_{i_2}$, ..., $y_{i_{L_i}}$
+\footnote{we use symbol $x$ and $y$ instead of classic $u$ and $v$ to avoid confusion between $v$
+and vector symbol $\mathbf{v}$ in nerual network language model.},
+where $L_i$ denotes number of items interacted by user $x_i$,
 which is much less than the amount of items $M$.
-
+To characterize the \emph{long interest}, we consider the whole items list as the context and generate
+the long interest of the current user.
+To characterize the \emph{short interest}, we consider items in the same local interest as the context
+and generate items in it one by one with the help of long interest.
 More formally, objective of the embedding model is to
 maximize the log-likelihood over the set of $T$ of all the interaction timeline,
 
 \begin{equation}
 \begin{aligned}
-	\sum_{i=1}^{N} \bigg( &p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_n}}) + \\
-	                      &\sum_{j=1}^{L_i} p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i) \bigg)
+	\sum_{i=1}^{N} \bigg( &p(x_i | y_{i_1}, y_{i_2}, ..., y_{i_{L_i}}) + \\
+	                      &\sum_{j=1}^{L_i} p(y_{i_j} | y_{i_{j-c}} : y_{i_{j+c}}, x_i) \bigg)
 \end{aligned}
 \end{equation}
 
-where $c$ is the time window size.
-$p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_i}})$ is the probability to generate
-the global interest of $u_i$ based on all items he interacted.
+where $c$ is the time window size, $y_{i_{j-c}} : y_{i_{j+c}}$ denotes the sequence
+$y_{i_{j-c}}, y_{i_{j-c+1}}, ..., y_{i_{j+c}}$ excluding $y_{i_j}$.
+
+$p(x_i | y_{i_1}, y_{i_2}, ..., y_{i_{L_i}})$ is the probability to generate
+the long interest of $u_i$ based on all items he interacted.
 The prediction task is typically done via a multiclass classifier,
 such as softmax. There, we have
 
 \begin{equation}
-	p(u_i | v_{i_1}, v_{i_2}, ..., v_{i_{L_i}}) =
+	p(x_i | y_{i_1}, y_{i_2}, ..., y_{i_{L_i}}) =
 	\frac
 	{
-		exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{u_i}^{'} )
+		exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{x_i}^{'} )
 	}
 	{
-		\sum_{k=1}^{V} exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{k}^{'} )
+		\sum_{x^{'}} exp ( \overline{\mathbf{v}}_{1}^{\mathrm{T}} \mathbf{v}_{x^{'}}^{'} )
 	}
 \end{equation}
 
-where $\mathbf{v}_{u_i}^{'}$ is the output vector representation of $u_i$,
-$V$ is the set of the whole items,
+where $\mathbf{v}_{x_i}^{'}$ is the output vector representation of $x_i$,
 and $\overline{\mathbf{v}}_{1}$ is averaged input vector representation of all the items
-interacted by user $u_i$, i.e.
+interacted by user $x_i$, i.e.
 
 \begin{equation}
-	\overline{\mathbf{v}}_{1} = \frac{\sum_{j=1}^{T_i} \mathbf{v}_{v_{i_j}}}{T_i}
+	\overline{\mathbf{v}}_{1} = \frac{\sum_{j=1}^{T_i} \mathbf{v}_{y_{i_j}}}{T_i}
 \end{equation}
 
-$p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i)$
-is the probability to generate the interest distribution of $v_{i_j}$
-based on items in the same local interest and the user's global interest.
-Similarly, using softmax multiclass classifier we have
+$p(y_{i_j} | y_{i_{j-c}} : y_{i_{j+c}}, x_i)$
+is the probability to generate $y_{i_j}$ based on items in the same short interest
+and the user's long interest. Similarly, using softmax multiclass classifier we have
 
 \begin{equation}
-	p(v_{i_j} | v_{i_{j-c}}, ..., v_{i_{j-1}}, v_{i_{j+1}},..., v_{i_{j+c}}, u_i) =
+	p(y_{i_j} | y_{i_{j-c}} : y_{i_{j+c}}, x_i) =
 	\frac
 	{
-		exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{v_{i_j}}^{'} )
+		exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{y_{i_j}}^{'} )
 	}
 	{
-		\sum_{k=1}^{V} exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{k}^{'} )
+		\sum_{y^{'}} exp( \overline{\mathbf{v}}_{2}^{\mathrm{T}} \mathbf{v}_{y^{'}}^{'} )
 	}
 \end{equation}
 
-where $\mathbf{v}_{v_{i_j}}^{'}$ is the output vector representation of $v_{i_j}$,
-$V$ is the set of the whole items,
+where $\mathbf{v}_{y_{i_j}}^{'}$ is the output vector representation of $y_{i_j}$,
 and $\overline{\mathbf{v}}_{2}$ is averaged input vector representation of items
-int the same local interest and corresponding global interest $u_i$.
+int the same short interest and corresponding long interest $x_i$.
 
 \begin{equation}
-	\overline{\mathbf{v}}_{2} = \frac{ \mathbf{v}_{v_{i_{j-c}}} + ... + \mathbf{v}_{v_{i_{j-1}}} + 
-	\mathbf{v}_{v_{i_{j+1}}} + ... + \mathbf{v}_{v_{i_{j+c}}} + \mathbf{v}_{u_i} }{2c+1}
+	\overline{\mathbf{v}}_{2} = \frac{
+    \mathbf{v}_{x_i} + 
+    \sum_{-c \leq k \leq c, k \not= 0}{\mathbf{v}_{y_{i_{j+k}}}}
+    }{2c+1}
 \end{equation}
 
+Stochastic Gradient Descent (SGD) are used as the training method,
+hierarchical softmax and negative sampling are two main approaches to accelerate
+the computation, and we use negative sampling approach in this paper.
 
-\subsection{Learning Model}
-With the help of embedding model, we can obtain
-the vector representation of users and items
-based on the local interest and global interest.
-We use the following notations to describe these representations:
-
-\begin{itemize}
-	\item $\tilde{\mathbf{u}}_i$ reflects the interest distribution of the $u_i$
-	\item $\tilde{\mathbf{v}}_j$ reflects the interest distribution of the $v_j$
-	\item $D$ is the length of those representation
-\end{itemize}
+\subsection{Feature based Collaborative Filtering}
+Feature based collaborative filtering \cite{chen2012svdfeature} is a variety of
+collaborative filtering, it allows us to build factorization models incorporating
+side information such as temporal dynamics, neighborhood relationship,
+and hierarchical information compare to conventional collaborative filtering,
+it can also be capable of both rate prediction and collaborative ranking.
 
 There are two kinds of side information in collaborative filtering:
-users' profiles and items' properties.
-Various kinds of information can be used to model these factors.
-In some sense, the representation of users and items from the embedding model
-could be treat as a kind of side information,
-because it distinguish the similarity and difference between users and items,
-just like other side information does.
-But it doesn't reflect a actual meaning, so we call it the \textbf{latent side information}. 
-
-Inspired by svdfeature algorithm \cite{chen2012svdfeature}, we utilize the feature-based
-collaborative filtering to take advantage of the latent side information.
-First, we generate the user feature $\alpha_{i}$ and the item feature $\beta_{j}$
-for user $u_i$ and item $v_j$.
-
-\begin{equation}
-\alpha_{i} = \{ OneHot(u_i), \tilde{\mathbf{u}}_i \}
-\end{equation}
-\begin{equation}
-\beta_{j} = \{OneHot(v_j), \tilde{\mathbf{v}}_j \}
-\end{equation}
-
-where $OneHot(u_i)$ is the one hot representation of $u_i$
-and $OneHot(v_j)$ is the one hot representation of $v_j$.
-
-Then we predict the rating for $u_i$ and $v_j$
+user side information and item side information.
+User side information could be the profiles of users, such as
+gender, age and occupation.
+Item side information is usually the properties of items,
+it mainly depends on the recommendation sceneries.
+In movie recommendation, item side information could be actor, director and genre
+of the movie. In product recommendation, item side information could be the price
+and category of the product.
+Feature based collaborative filtering summarizes the two factors as feature vectors
+(denoted by $\mathbf{u}_i \in \mathbb{R}^{n}$ and $\mathbf{v}_j \in \mathbb{R}^{m}$) and predicts
+the preference score $\hat{r}$ as
 
 \begin{equation}
-\hat{r} = \sum_{i=1}^{n} \alpha_{i} b_{i}^{(u)} + \sum_{i=1}^{m} \alpha_{i} b_{i}^{(i)} +
-\left( \sum_{i=1}^{n} \alpha_{i} \textbf{p}_{i} \right) ^ \mathrm{T}
-\left( \sum_{i=1}^{m} \beta_{i} \textbf{q}_{i} \right)
+\begin{aligned}
+\hat{r}_{ij} = \sum_{k=1}^{n} \alpha_k \mathbf{u}_{ik} + &\sum_{k=1}^{m} \beta_k \mathbf{v}_{jk} + \\
+&\left( \sum_{k=1}^{n} \mathbf{u}_{ik} \mathbf{p}_k \right) ^ \mathrm{T}
+\left( \sum_{k=1}^{m} \mathbf{v}_{jk} \mathbf{q}_k \right)
+\end{aligned}
 \end{equation}
 
-where $\textbf{p}_{i} \in \mathbb{R}^d$ and $\textbf{q}_{i} \in \mathbb{R}^d$
-are $d$ dimensional latent factors associated with each feature.
-$b_{i}^{(u)}$ and $b_{i}^{(i)}$ are bias parameters that directly influence the prediction.
+where $\alpha$ and $\beta$ controls the influence of each feature,
+$\mathbf{p}_{k} \in \mathbb{R}^K$ and $\mathbf{q}_{k} \in \mathbb{R}^K$
+are $K$ dimensional latent factors associated with each feature.
+If we represent one-hot representation of users and items like
 
+\begin{equation}
+    \mathbf{u}_{ik} =
+    \left\{
+        \begin{aligned}
+            1, &k = i \\
+            0, &k \not= i
+        \end{aligned}
+    \right. \\
+\end{equation}
+
+\begin{equation}
+    \mathbf{v}_{jk} =
+    \left\{
+        \begin{aligned}
+            1, &k = j \\
+            0, &k \not= j
+        \end{aligned}
+    \right. \\
+\end{equation}
+
+the equation for rating prediction will reduce to the basic matrix factorization
+
+\begin{equation}
+\hat{r}_{ij} = \alpha_i + \beta_j + \mathbf{p}_i ^ \mathrm{T} \mathbf{q}_j
+\end{equation}
+
+where $\alpha$, $\beta$ are the biases and $\mathbf{p}_i$, $\mathbf{q}_j$
+are the latent factors for user $\mathbf{u}_i$ and item $\mathbf{v}_j$.
+
+Various kinds of side information can be utilized to enhance these factors.
+In some sense, the representation of users and items
+learned from long-short interest model can be treated as a kind of side information,
+because it distinguish the similarity and difference between users and items.
+
+First, we define $\tilde{\mathbf{u}}_i$ as
+the learned vector representation of users and $\tilde{\mathbf{v}}_j$ as
+the learned vector representation of items.
+Then, we get new features of users and items by add the learned vector representation
+to origin one-hot representation.
+
+\begin{equation}
+    \mathbf{u}_{i} = \{ \mathbf{u}_{i} , \tilde{\mathbf{u}}_i \}
+\end{equation}
+
+\begin{equation}
+    \mathbf{v}_{j} = \{ \mathbf{v}_{j} , \tilde{\mathbf{v}}_j \}
+\end{equation}
+
+There, the equation for rating prediction will change to
+
+\begin{equation}
+\begin{aligned}
+\hat{r}_{ij} =
+&\sum_{k=1}^{N+D} \alpha_k \{ \mathbf{u}_i , \tilde{\mathbf{u}}_i \}_k +
+ \sum_{k=1}^{M+D} \beta_k  \{ \mathbf{v}_j , \tilde{\mathbf{v}}_j \}_k + \\
+&\left( \sum_{k=1}^{N+D} \{ \mathbf{u}_i , \tilde{\mathbf{u}}_i \}_k \mathbf{p}_k \right) ^ \mathrm{T}
+ \left( \sum_{k=1}^{M+D} \{ \mathbf{v}_j , \tilde{\mathbf{v}}_j \}_k \mathbf{q}_k \right) \\
+= &\sum_{k=N+1}^{N+D} \alpha_k \tilde{\mathbf{u}}_{ik} +
+ \sum_{k=M+1}^{M+D} \beta_k  \tilde{\mathbf{v}}_{jk} + \\
+&\left( \sum_{k=N+1}^{N+D} \tilde{\mathbf{u}}_{ik} \mathbf{p}_k \right) ^ \mathrm{T}
+ \left( \sum_{k=M+1}^{M+D} \tilde{\mathbf{v}}_{jk} \mathbf{q}_k \right) + \\
+&\alpha_i + \beta_j + \mathbf{p}_i ^ \mathrm{T} \mathbf{q}_j
+\end{aligned}
+\end{equation}
+
+where $N$ is the number of users, $M$ is the number of items,
+$D$ is the dimension of sequential features of users and items learned from
+our long-short interest model,
+$\mathbf{p}_{k} \in \mathbb{R}^K$ and $\mathbf{q}_{k} \in \mathbb{R}^K$
+are $K$ dimensional latent factors associated with each feature.
 
 \section{Experiment}
+In this section, we conduct several experiments to evaluate the effectiveness
+of our proposed long-short interest model on
+MovieLens \footnote{http://grouplens.org/datasets/movielens/}
+and Netflix Prize \footnote{http://www.netflixprize.com/} dataset.
+In these experiments, we also conduct corresponding analysis to investigate:
+(1) the prediction performance of the long-short interest model compare to other classic methods;
+(2) the influence of the long-short interest model on users own different interaction number and
+(3) the effects of sequential features dimension and latent factors number.
 
-\subsection{Baseline Models}
-We use two popular techniques that are widely used
-in both academia and industry as our baseline models.
-
-\textbf{LibMF} is an open source tool
-for approximating an incomplete matrix using the product of
-two matrices in a latent space.
-It provides solvers for real-valued matrix factorization,
-binary matrix factorization, and one-class matrix factorization.
-It also supports parallel computation in a multi-core machine
-using CPU instructions (e.g., SSE) to accelerate vector operations.
-Its paper \cite{chin2015fast} won the best paper award
-in RecSys 2013.
-
-Factorization machines (FM) are a generic approach that
-allows to mimic most factorization models by feature engineering.
-This way, factorization machines combine the generality of
-feature engineering with the superiority of factorization models
-in estimating interactions between categorical variables of large domain.
-\textbf{LibFM} \cite{rendle2012factorization} is a software implementation
-for factorization machines that features
-Stochastic Gradient Descent (SGD) and
-Alternating Least Squares (ALS) optimization as well as
-Bayesian inference using Markov Chain Monte Carlo (MCMC).
-We select ALS optimization in our baseline experiments.
-
-\subsection{Dataset}
-We conduct experiments on three benchmark datasets MovieLens-1M, MovieLens-10M and MovieLens-20M
-\footnote{http://grouplens.org/datasets/movielens/},
-which are commonly used for evaluating collaborative filtering algorithms.
+\subsection{Experimental Setup}
+\subsubsection{Dataset}
+We conduct experiments on three MovieLens datasets (i.e. MovieLens-1M, MovieLens-10M and MovieLens-20M)
+and Netflix Prize dataset, which are commonly used for evaluating collaborative filtering algorithms.
 The MovieLens-1M dataset consists of about 1 million ratings of 6040 users and 3706 movies,
 and each rating is an integer between 1 (worst) and 5 (best).
 The MovieLens-10M dataset consisits of about 10 million ratings of 69878 users and 10677 movies,
 the MovieLens-20M dataset consisits of about 20 million ratings of 138493 users and 26744 movies,
 and each rating ranges from 0.5 (worst) to 5.0 (best) step by 0.5.
-The ratings are highly sparse.
+The Netflix Prize dataset consists of about 100 million ratings of 480189 users and 17770 movies,
+and each rating is an integer between 1 (worst) and 5 (best).
+
+Those datasets also provide some side information about users and items,
+but we no not user them in our experiments.
 Table \ref{tab:statistics} summarizes the statistics of three datasets.
 
 \begin{table}[htpb]
-	\centering
-	\caption{Statistics of three datasets}
-	\label{tab:statistics}
-	\begin{tabular}{|l|c|c|c|c|}
-		\hline
-		\textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} \\
-		\hline
-		ML-1M  & 6,040    & 3,706  & 1,000,209   & 95.53\% \\
-		ML-10M & 69,878   & 10,677 & 10,000,054  & 98.66\% \\
-		ML-20M & 138,493  & 26,744 & 20,000,263  & 99.46\% \\
-		NetFlix & 480,189 & 17,770 & 100,480,507 & 98.82\% \\
-		\hline
-	\end{tabular}
+    \centering
+    \caption{Statistics of three MovieLens datasets and Netflix dataset.}
+    \label{tab:statistics}
+    \begin{tabular}{|l|c|c|c|c|}
+        \hline
+        \textbf{Dataset} & \textbf{\#Users} & \textbf{\#Items} & \textbf{\#Ratings} & \textbf{Sparsity} \\
+        \hline
+        ML-1M  & 6,040    & 3,706  & 1,000,209   & 95.53\% \\
+        ML-10M & 69,878   & 10,677 & 10,000,054  & 98.66\% \\
+        ML-20M & 138,493  & 26,744 & 20,000,263  & 99.46\% \\
+        NetFlix & 480,189 & 17,770 & 100,480,507 & 98.82\% \\
+        \hline
+    \end{tabular}
 \end{table}
 
-\subsection{Metrics}
+\subsubsection{Metrics}
 We employ the root mean squared error (RMSE) and mean absolute error (MAE) as the evaluation metric.
 RMSE and MAE are defined as:
 \begin{equation}
-	RSME = \sqrt{ \frac{1}{N} \sum_{i,j} I_{ij} (R_{ij} - \hat{R}_{ij})^2 }
+    RSME = \sqrt{ \frac{1}{N} \sum_{i,j} I_{ij} (R_{ij} - \hat{R}_{ij})^2 }
 \end{equation}
 \begin{equation}
-	MAE = \frac{1}{N} \sum_{i,j} I_{ij} |R_{ij} - \hat{R}_{ij}|
+    MAE = \frac{1}{N} \sum_{i,j} I_{ij} |R_{ij} - \hat{R}_{ij}|
 \end{equation}
 where $N$ is the total number of ratings in the test set,
 $R_{ij}$ is the ground-truth rating of user $i$ for item $j$,
 $\hat{R_{ij}}$ denotes the corresponding predicted rating,
 and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
+\subsection{Baseline Models}
+To demonstrate the superiority of our long-short interest model for rating prediction,
+we compare our model model with several baseline methods.
+In special, we use two popular techniques, \textbf{LibMF} and \textbf{LibFM}, that are
+widely used in both academia and industry as our baseline models.
 
+LibMF is an open source tool for approximating an incomplete matrix
+using the product of two matrices in a latent space.
+It provides solvers for real-valued matrix factorization,
+binary matrix factorization, and one-class matrix factorization, and 
+also supports parallel computation in a multi-core machine using CPU instructions
+(e.g., SSE) to accelerate vector operations.
+Its paper \cite{chin2015fast} won the best paper award in RecSys 2013.
+
+Factorization machines (FM) are a generic approach that
+allows to mimic most factorization models by feature engineering.
+This way, factorization machines combine the generality of
+feature engineering with the superiority of factorization models
+in estimating interactions between categorical variables of large domain.
+LibFM \cite{rendle2012factorization} is a software implementation
+for factorization machines that features
+Stochastic Gradient Descent (SGD) and
+Alternating Least Squares (ALS) optimization as well as
+Bayesian inference using Markov Chain Monte Carlo (MCMC).
+
+\subsection{Experimental Results}
+In this section, we report the experimental results to demonstrate
+the effectiveness of our long-short interest model.
+In the following, we denote our long-short interest model as \textbf{LSIM},
+the LibMF model as \textbf{LibMF}, and LibFM with SGD optimization,
+ALS optimization and MCMC optimization as \textbf{LibMF-SGD},
+\textbf{LibMF-ALS} and \textbf{LibMF-MCMC} respectively.
+
+We split the rating data in each dataset into random 90\%-10\% training-test datasets,
+the training dataset are used for build the model for different algorithm and
+the remaining data are used for testing. This process is repeated five times,
+and we report the average RMSE and MAE.
+
+Table \ref{tab:msre} and Table \ref{tab:mae} show the RSME performance and the MAE performance
+of our LSIM and baseline methods on the MovieLens datasets and NetFlix Prize dataset.
+The best performances are marked in bold typeface.
+We can observe:
+(1) The prediction performance of \tectbf{LibMF} is worst, 
+
+Sequential embedding methods (i.e., SG and GloVe) achieve similar performance without explicit user modeling. PVDM performs better than them since PVDM in- corporates user preference (i.e., doc embedding).
+(2) HRM performs better than PVDM because it integrates the user preference with previous location in last “baskets” as con- texts in a ranking model.
+(3) HRM and JRLM perform better than USG. The major reason is that both methods can capture sequential relatedness, which is important to loca- tion recommendation. Besides, sequential embedding meth- ods [Mikolov et al., 2013a] are particularly suitable to model sequential relatedness.
+(4) By incorporating social connec- tions, our base model JRLM improves over HRM, indicating the effectiveness of social connections.
+(5) Further, JRLM++ is substantially better than JRLM, which shows the effective- ness of multi-grain sequential contexts.
+
+% It can be clearly observed from Table 4 that all these query expansion methods can result in improvements in terms of MAP compared with the SimpleKL method for both TREC 2012 and 2013 topics, 
+
+% To the best of our knowledge, the best results published regarding MovieLens-1M and MovieLens-10M are reported by both (Lee et al., 2013; Sedhain et al., 2015) with a final RMSE of 0.831 ± 0.003 and 0.782 ± 0.003. These scores are obtained with a training ratio of 90\%/10\% and without side information.
+
+% in order to exhibit the utility of side information, we report in Table 2 the RMSE conditionally to the number of miss- ing values for items. As expected, the fewer number of rat- ings for an item, the more important the side information. A more careful analysis of the RMSE improvement in this setting shows that the improvement is uniformly distributed over the users whatever their number of ratings.
 
 
 \begin{table*}[htpb]
 	\centering
-	\caption{MSRE}
+	\caption{RSME Performance comparison of the proposed methods and baselines with a training ratio of 90\%/10\%
+    on the MovieLens dataset and NetFlix Prize dataset.}
 	\label{tab:msre}
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
@@ -565,8 +691,9 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
 \begin{table*}[htpb]
 	\centering
-	\caption{MAE}
-	\label{tab:msre}
+	\caption{MAE Performance comparison of the proposed methods and baselines with a training ratio of 90\%/10\%
+    on the MovieLens dataset and NetFlix Prize dataset.}
+	\label{tab:mae}
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
 		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
@@ -580,14 +707,16 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 	\end{tabular}
 \end{table*}
 
+% Parameter Sensitivity
+
 
 \section{Conclusions}
 
 
-\section{Acknowledgments}
-The work reported in this paper is supported by the National Natural Science Foundation of China Grant 61370116.
-We thank anonymous reviewers for their beneficial comments.
-We also thank Feifan Fan and Yue Fei for valuable suggestions related to this paper.
+% \section{Acknowledgments}
+% The work reported in this paper is supported by the National Natural Science Foundation of China Grant 61370116.
+% We thank anonymous reviewers for their beneficial comments.
+% We also thank Feifan Fan and Yue Fei for valuable suggestions related to this paper.
 
 \bibliographystyle{abbrv}
 \bibliography{sigproc}
