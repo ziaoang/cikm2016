@@ -652,25 +652,6 @@ the training dataset are used for build the model for different algorithm and
 the remaining data are used for testing. This process is repeated five times,
 and we report the average RMSE and MAE.
 
-Table \ref{tab:msre} and Table \ref{tab:mae} show the RSME performance and the MAE performance
-of our LSIM and baseline methods on the MovieLens datasets and NetFlix Prize dataset.
-The best performances are marked in bold typeface.
-We can observe:
-(1) The prediction performance of \tectbf{LibMF} is worst, 
-
-Sequential embedding methods (i.e., SG and GloVe) achieve similar performance without explicit user modeling. PVDM performs better than them since PVDM in- corporates user preference (i.e., doc embedding).
-(2) HRM performs better than PVDM because it integrates the user preference with previous location in last “baskets” as con- texts in a ranking model.
-(3) HRM and JRLM perform better than USG. The major reason is that both methods can capture sequential relatedness, which is important to loca- tion recommendation. Besides, sequential embedding meth- ods [Mikolov et al., 2013a] are particularly suitable to model sequential relatedness.
-(4) By incorporating social connec- tions, our base model JRLM improves over HRM, indicating the effectiveness of social connections.
-(5) Further, JRLM++ is substantially better than JRLM, which shows the effective- ness of multi-grain sequential contexts.
-
-% It can be clearly observed from Table 4 that all these query expansion methods can result in improvements in terms of MAP compared with the SimpleKL method for both TREC 2012 and 2013 topics, 
-
-% To the best of our knowledge, the best results published regarding MovieLens-1M and MovieLens-10M are reported by both (Lee et al., 2013; Sedhain et al., 2015) with a final RMSE of 0.831 ± 0.003 and 0.782 ± 0.003. These scores are obtained with a training ratio of 90\%/10\% and without side information.
-
-% in order to exhibit the utility of side information, we report in Table 2 the RMSE conditionally to the number of miss- ing values for items. As expected, the fewer number of rat- ings for an item, the more important the side information. A more careful analysis of the RMSE improvement in this setting shows that the improvement is uniformly distributed over the users whatever their number of ratings.
-
-
 \begin{table*}[htpb]
 	\centering
 	\caption{RSME Performance comparison of the proposed methods and baselines with a training ratio of 90\%/10\%
@@ -681,9 +662,9 @@ Sequential embedding methods (i.e., SG and GloVe) achieve similar performance wi
 		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
 		\hline
 		LibMF      & 0.8554 $\pm$ 0.0013 & 0.8090 $\pm$ 0.0004 & 0.8023 $\pm$ 0.0004 & 0.8630 $\pm$ 0.0002 \\
-		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 & \\
-		LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 & \\
+		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 & 0.8485 $\pm$ 0.0014 \\
 		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 & 0.8406 $\pm$ 0.0001 \\
+        LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 & 0.8357 $\pm$ 0.0003 \\
 		LSIM       &  &  &  & \\
 		\hline
 	\end{tabular}
@@ -699,13 +680,34 @@ Sequential embedding methods (i.e., SG and GloVe) achieve similar performance wi
 		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
 		\hline
 		LibMF      & 0.6816 $\pm$ 0.0008 & 0.6311 $\pm$ 0.0003 & 0.6229 $\pm$ 0.0004 & 0.6822 $\pm$ 0.0002 \\
-		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 & \\
-		LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 & \\
+		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 & 0.6517 $\pm$ 0.0046 \\
 		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 & 0.6481 $\pm$ 0.0002 \\
+        LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 & 0.6486 $\pm$ 0.0002 \\
 		LSIM       &  &  &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
+
+Table \ref{tab:msre} and Table \ref{tab:mae} show the RSME performance and the MAE performance
+of our LSIM and baseline methods on the MovieLens datasets and NetFlix Prize dataset.
+The best performances are marked in bold typeface.
+We can clearly observe:
+(1) The prediction performance of \textbf{LibMF} is worse than other models, the reason
+should be that it foucses on accelerating the training speed of matrix factorization by
+parallelization, and doesn't pay more attention on the prediction precision.
+(2) In three \textbf{LibFM} models, MCMC optimization \textbf{LibFM-MCMC} shows
+a better performance in large datasets (MovieLens-10M, MovieLens-20M, Netflix) while
+ALS optimization \textbf{LibFM-ALS} shows a better performance in small datasets (MovieLens-1M).
+The performance of SGD optimization \textbf{LibFM-SGD} is the worst.
+(3) Our LSIM has the best performance between those models in both RMSE and MAE performance on all datasets,
+which shows the effectiveness of the long-short interest model.
+
+To the best of our knowledge, the best results published regarding MovieLens-1M and MovieLens-10M
+are reported by both (Lee et al., 2013; Sedhain et al., 2015) with a final RMSE of 0.831 ± 0.003
+and 0.782 ± 0.003. These scores are obtained with a training ratio of 90\%/10\% and without side information.
+
+% in order to exhibit the utility of side information, we report in Table 2 the RMSE conditionally to the number of miss- ing values for items. As expected, the fewer number of rat- ings for an item, the more important the side information. A more careful analysis of the RMSE improvement in this setting shows that the improvement is uniformly distributed over the users whatever their number of ratings.
+
 
 % Parameter Sensitivity
 
