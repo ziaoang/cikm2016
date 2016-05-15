@@ -560,28 +560,42 @@ are $K$ dimensional latent factors associated with each feature.
 
 \section{Experiment}
 In this section, we conduct several experiments to evaluate the effectiveness
-of our proposed long-short interest model on
-MovieLens \footnote{http://grouplens.org/datasets/movielens/}
-and Netflix Prize \footnote{http://www.netflixprize.com/} dataset.
+of our proposed long-short interest model on three public
+MovieLens \footnote{http://grouplens.org/datasets/movielens/} datasets.
 In these experiments, we also conduct corresponding analysis to investigate:
-(1) the prediction performance of the long-short interest model compare to other classic methods;
-(2) the influence of the long-short interest model on users own different interaction number and
-(3) the effects of sequential features dimension and latent factors number.
+(1) the rating prediction performance of our long-short interest model
+compare to other benchmark models;
+(2) the effect of our long-short interest model on users own different interaction number.
 
 \subsection{Experimental Setup}
 \subsubsection{Dataset}
-We conduct experiments on three MovieLens datasets (i.e. MovieLens-1M, MovieLens-10M and MovieLens-20M)
-and Netflix Prize dataset, which are commonly used for evaluating collaborative filtering algorithms.
-The MovieLens-1M dataset consists of about 1 million ratings of 6040 users and 3706 movies,
-and each rating is an integer between 1 (worst) and 5 (best).
-The MovieLens-10M dataset consisits of about 10 million ratings of 69878 users and 10677 movies,
-the MovieLens-20M dataset consisits of about 20 million ratings of 138493 users and 26744 movies,
-and each rating ranges from 0.5 (worst) to 5.0 (best) step by 0.5.
-The Netflix Prize dataset consists of about 100 million ratings of 480189 users and 17770 movies,
-and each rating is an integer between 1 (worst) and 5 (best).
+We conduct experiments on three MovieLens datasets, i.e. MovieLens-1M,
+MovieLens-10M and MovieLens-20M, which are commonly used for evaluating
+collaborative filtering algorithms.
 
-Those datasets also provide some side information about users and items,
-but we no not user them in our experiments.
+The MovieLens-1M dataset consists of about 1 million anonymous ratings of 3706 movies
+made by 6040 MovieLens users who joined MovieLens in 2000,
+and each rating is an integer between 1 (worst) and 5 (best).
+Timestamp is represented in seconds and each user has at least 20 ratings.
+
+The MovieLens-10M dataset contains about 10 million ratings and 95580 tags
+applied to 10677 movies by 69878 users of the online movie recommender service MovieLens.
+Users were selected at random for inclusion. All users selected had rated
+at least 20 movies. Unlike previous MovieLens data sets, no demographic information is included.
+Ratings are made on a 5-star scale, with half-star increments, i.e., 0.5 is the worst scroe
+and 5.0 is the best score.
+
+the MovieLens-20M dataset describes 5-star rating and free-text tagging activity.
+It contains about 20 million ratings and 465564 tag applications across 26744 movies.
+These data were created by 138493 users between January 09, 1995 and March 31, 2015.
+This dataset was generated on March 31, 2015.
+Users were selected at random for inclusion. All selected users had rated
+at least 20 movies. No demographic information is included.
+Each user is represented by an id, and no other information is provided.
+
+These datasets also provide some side information about users and items,
+such as gender, age and occupation of users and movies' genres,
+but we don't use the side information in all our experiments.
 Table \ref{tab:statistics} summarizes the statistics of three datasets.
 
 \begin{table}[htpb]
@@ -595,37 +609,42 @@ Table \ref{tab:statistics} summarizes the statistics of three datasets.
         ML-1M  & 6,040    & 3,706  & 1,000,209   & 95.53\% \\
         ML-10M & 69,878   & 10,677 & 10,000,054  & 98.66\% \\
         ML-20M & 138,493  & 26,744 & 20,000,263  & 99.46\% \\
-        NetFlix & 480,189 & 17,770 & 100,480,507 & 98.82\% \\
         \hline
     \end{tabular}
 \end{table}
 
 \subsubsection{Metrics}
-We employ the root mean squared error (RMSE) and mean absolute error (MAE) as the evaluation metric.
-RMSE and MAE are defined as:
+We employ two metrics, the Root Mean Square Error (RMSE) and the Mean Absolute Error (MAE),
+to measure the rating prediction quality of our proposed approach in comparison with other
+collaborative filtering baesd recommendation methods.
+The metrics RSME is defined as:
+
 \begin{equation}
     RSME = \sqrt{ \frac{1}{N} \sum_{i,j} I_{ij} (R_{ij} - \hat{R}_{ij})^2 }
 \end{equation}
+
+where $R_{ij}$ denotes the ground-truth rating the user $i$ gives to the item $j$,
+$\hat{R}_{ij}$ denotes the corresponding predicted rating the user $i$ gives to
+the item $j$ by a method, $I_{ij}$ is abinary matrix that indicates the ratings
+in the test set, and $N$ is the total number of ratings in the test set.
+The metrics MAE is defined as:
+
 \begin{equation}
     MAE = \frac{1}{N} \sum_{i,j} I_{ij} |R_{ij} - \hat{R}_{ij}|
 \end{equation}
-where $N$ is the total number of ratings in the test set,
-$R_{ij}$ is the ground-truth rating of user $i$ for item $j$,
-$\hat{R_{ij}}$ denotes the corresponding predicted rating,
-and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 
-\subsection{Baseline Models}
-To demonstrate the superiority of our long-short interest model for rating prediction,
-we compare our model model with several baseline methods.
-In special, we use two popular techniques, LibMF and LibFMtrain-20m, that are
-widely used in both academia and industry as our baseline models.
+\subsection{Benchmark Models}
+To demonstrate the superiority of our long-short interest model for rating prediction task,
+we compare our model with several benchmark models.
+In special, we use two popular toolkits, LibMF and LibFM, that are
+widely used in both academia and industry as our benchmark models.
 
 LibMF is an open source tool for approximating an incomplete matrix
 using the product of two matrices in a latent space.
 It provides solvers for real-valued matrix factorization,
 binary matrix factorization, and one-class matrix factorization, and 
-also supports parallel computation in a multi-core machine using CPU instructions
-(e.g., SSE) to accelerate vector operations.
+also supports parallel computation in a multi-core machine using CPU
+instructions (e.g., SSE) to accelerate vector operations.
 Its paper \cite{chin2015fast} won the best paper award in RecSys 2013.
 
 Factorization machines (FM) are a generic approach that
@@ -639,91 +658,97 @@ Stochastic Gradient Descent (SGD) and
 Alternating Least Squares (ALS) optimization as well as
 Bayesian inference using Markov Chain Monte Carlo (MCMC).
 
-\subsection{Experimental Results}
+\subsection{Overall Results}
 In this section, we report the experimental results to demonstrate
 the effectiveness of our long-short interest model.
-In the following, we denote our long-short interest model as \textbf{LSIM},
-the LibMF model as \textbf{LibMF}, and LibFM with SGD optimization,
-ALS optimization and MCMC optimization as \textbf{LibMF-SGD},
-\textbf{LibMF-ALS} and \textbf{LibMF-MCMC} respectively.
 
-We split the rating data in each dataset into random 90\%-10\% training-test datasets,
-the training dataset are used for build the model for different algorithm and
-the remaining data are used for testing. This process is repeated five times,
-and we report the average RMSE and MAE.
+The model proposed in LibMF toolkit is denoted as \textbf{LibFM},
+the dimension of latent factors is set to $100$ and the number of
+iterations is set to $1000$.
+
+For the model proposed in LibFM, we denote the LibFM model optimized by
+SGD as \textbf{LibFM-SGD}, the learn rate is set to $0.01$, the regular
+parameter is set to $(0,0,0.01)$ and the stdev for initialization of 2-way
+factors is set to $0.1$. Then we denote the LibFM model optimized by ALS
+as \textbf{LibFM-ALS}, the regular parameter is set to $(0,0,10)$ and the
+stdev for initialization of 2-way factors is set to $0.1$. Lastly, the
+LibFM model optimized by MCMC is denoted as \textbf{LibFM-MCMC}, the stdev
+for initialization of 2-way factors is set to $0.1$.
+
+Meanwhile, we denote our long-short interest model as \textbf{LSIM},
+the slide window size is set to $10$, the dimension of latent factors is
+set to $256$ and the dimension of sequential features is set to $100$.
+For feature based collaborative filtering framework, the learn rate is set
+to $0.005$ and the regular parameter is set to $0.024$ for both users and items.
+
+We split the rating data in each dataset into random 90\%-10\% training-test
+datasets, the training dataset are used for building our proposed model
+and benchmark models, the remaining data are used for testing.
+This process is repeated five times, and we report the mean value and
+standard deviation of RMSE and MAE.
 
 \begin{table*}[htpb]
 	\centering
-	\caption{RSME Performance comparison of the proposed methods and baselines with a training ratio of 90\%/10\%
-    on the MovieLens dataset and NetFlix Prize dataset.}
+	\caption{RSME Performance comparison of our proposed model and benchmark models
+    with a training ratio of 90\%/10\% on three MovieLens datasets.}
 	\label{tab:msre}
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{|l|c|c|c|}
 		\hline
-		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
+		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M} \\
 		\hline
-		LibMF      & 0.8554 $\pm$ 0.0013 & 0.8090 $\pm$ 0.0004 & 0.8023 $\pm$ 0.0004 & 0.8630 $\pm$ 0.0002 \\
-		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 & 0.8485 $\pm$ 0.0014 \\
-		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 & 0.8406 $\pm$ 0.0001 \\
-        LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 & 0.8357 $\pm$ 0.0003 \\
-		LSIM       & \textbf{0.8355 $\pm$ 0.0014} &  &  & \\
+		LibMF      & 0.8554 $\pm$ 0.0013 & 0.8090 $\pm$ 0.0004 & 0.8023 $\pm$ 0.0004 \\
+		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 \\
+		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 \\
+        LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 \\
+		LSIM       & \textbf{0.8355} $\pm$ \textbf{0.0014} &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
 
 \begin{table*}[htpb]
 	\centering
-	\caption{MAE Performance comparison of the proposed methods and baselines with a training ratio of 90\%/10\%
-    on the MovieLens dataset and NetFlix Prize dataset.}
+	\caption{MAE Performance comparison of our proposed model and benchmark models
+    with a training ratio of 90\%/10\% on three MovieLens datasets.}
 	\label{tab:mae}
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{|l|c|c|c|}
 		\hline
-		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M}  & \textbf{NetFlix} \\
+		\textbf{Algorithms} & \textbf{MovieLens-1M} & \textbf{MovieLens-10M} & \textbf{MovieLens-20M} \\
 		\hline
-		LibMF      & 0.6816 $\pm$ 0.0008 & 0.6311 $\pm$ 0.0003 & 0.6229 $\pm$ 0.0004 & 0.6822 $\pm$ 0.0002 \\
-		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 & 0.6517 $\pm$ 0.0046 \\
-		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 & 0.6481 $\pm$ 0.0002 \\
-        LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 & 0.6486 $\pm$ 0.0002 \\
-		LSIM       & \textbf{0.6539 $\pm$ 0.0010} &  &  & \\
+		LibMF      & 0.6816 $\pm$ 0.0008 & 0.6311 $\pm$ 0.0003 & 0.6229 $\pm$ 0.0004 \\
+		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 \\
+		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 \\
+        LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 \\
+		LSIM       & \textbf{0.6539} $\pm$ \textbf{0.0010} &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
 
-Table \ref{tab:msre} and Table \ref{tab:mae} show the RSME performance and the MAE performance
-of our LSIM and baseline methods on the MovieLens datasets and NetFlix Prize dataset.
+Table \ref{tab:msre} shows the RSME performance of our proposed model and benchmark methods 
+with a training ratio of 90\% / 10\% on three MovieLens datasets while Table \ref{tab:mae}
+shows the RSME performance of thses models in the same experimental setting respectively.
 The best performances are marked in bold typeface.
-We can clearly observe:
+From the two tables, we can clearly observe:
 \begin{enumerate}
-\item The prediction performance of \textbf{LibMF} is worse than other models, the reason
-should be that it foucses on accelerating the training speed of matrix factorization by
-parallelization, and doesn't pay more attention on the prediction precision.
+\item The rating prediction performance of \textbf{LibMF} is worst among all the models,
+the reason should be that it foucses on accelerating the training speed of matrix
+factorization by parallelization, and doesn't pay enough attention on optimizing
+the prediction precision.
 \item In three \textbf{LibFM} models, MCMC optimization \textbf{LibFM-MCMC} shows
-a better performance in large datasets (MovieLens-10M, MovieLens-20M, Netflix) while
-ALS optimization \textbf{LibFM-ALS} shows a better performance in small datasets (MovieLens-1M).
-The performance of SGD optimization \textbf{LibFM-SGD} is the worst.
-\item Our LSIM has the best performance between those models in both RMSE and MAE performance on all datasets,
-which shows the effectiveness of the long-short interest model.
-To the best of our knowledge, the best results published regarding MovieLens-1M and MovieLens-10M
-are reported by both \cite{lee2013local, sedhain2015autorec} with a final RMSE of $0.831 \pm 0.003$
-and $0.782 \pm 0.003$. These scores are obtained with a training ratio of 90\%/10\% and without side information.
+a better performance in large datasets (MovieLens-10M and MovieLens-20M) while
+ALS optimization \textbf{LibFM-ALS} shows a better performance in small datasets
+(MovieLens-1M). The performance of SGD optimization \textbf{LibFM-SGD} is the worst.
+\item Our \textbf{LSIM} has the best performance between among all models in both RMSE
+and MAE performance on all three MovieLens datasets, which shows the effectiveness
+of the long-short interest model. To the best of our knowledge, the best results
+published regarding MovieLens-1M and MovieLens-10M are reported by both
+\cite{lee2013local, sedhain2015autorec} with a final RMSE of $0.831 \pm 0.003$
+and $0.782 \pm 0.003$. These scores are obtained with a training ratio of
+90\%/10\% and without side information. That means our proposed model can achieve
+the start-of-the-art performance.
+\item the more
 \end{enumerate}
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[scale=0.3]{images/rank_rsme.pdf}
-	\caption{A Example for Short Interest and Long Interest}
-	\label{fig:rank_rsme}
-\end{figure}
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[scale=0.3]{images/rank_mae.pdf}
-	\caption{A Example for Short Interest and Long Interest}
-	\label{fig:rank_mae}
-\end{figure}
-
-\subsection{Discuss}
-
-\subsubsection{Effects on Different Users}
+\subsection{Effects on Different Users}
 In our long-short interest model, the change of users' interest over time has been
 embedding into the sequential features. For these users with a lot of interactions,
 their long interest and short interest will be detailedly extracted via LSIM.
@@ -733,39 +758,64 @@ This phenomenon means that our LSIM will show a better performance on users with
 lots of interactions than ones with few interactions.
 
 In order to exhibit this character of LSIM,
-users on MovieLens-1M are sorted by their respective number of ratings, then
-they are grouped by the ranking order into $5$ clusters (i.e. 0\%-20\%,
-20\%-40\%, 40\%-60\%, 60\%-80\% and 80\%-100\%), and MSE and MAE are computed
-by cluster respectively with a training ratio of 90\%/10\%.
-For instance, the first cluster contains the 20\% of users with the lowest
+we carry on some experiments on the MovieLens-1M dataset.
+First, we sort the users on MovieLens-1M according to their respective number
+of ratings, those users are grouped by their ranking order into $5$  
+clusters (i.e. 0\%-20\%, 20\%-40\%, 40\%-60\%, 60\%-80\% and 80\%-100\%),
+and RMSE and MAE are computed by cluster respectively with a training ratio of 90\%/10\%.
+For instance, the first cluster contains the 20\% of users with the least
 number of ratings and the last cluster contains the 20\% of users with the
 highest number of ratings.
 The provided results are the mean reported through $5$-cross validation.
 
-we report in Figure \ref{fig:rank_rsme} the RMSE and MAE for our LSIM and all baseline
-models conditionally to the number of interactions for users.
-As expected, for all models, the more number of interactions for an user, the better
-performance they have. For our proposed LSIM, its performance is not the best in the
-``0\%-20\%'', but when the interactions become more, its performance rapidly increases,
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[scale=0.3]{images/rank_rsme.pdf}
+    \caption{RMSE computed by cluster of users sorted by their respective number
+    of ratings on MovieLens-10M with a training ratio of 90\%/10\%.}
+    \label{fig:rank_rsme}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[scale=0.3]{images/rank_mae.pdf}
+    \caption{MAE computed by cluster of users sorted by their respective number
+    of ratings on MovieLens-10M with a training ratio of 90\%/10\%.}
+    \label{fig:rank_mae}
+\end{figure}
+
+Figure \ref{fig:rank_rsme} shows the RMSE performance of all recommendation models
+in different user clusters on MovieLens-1M dataset while Figure \ref{fig:rank_mae}
+shows the MAE performance of all recommendation models in the same experimental
+setting respectively.
+It can be clearly observed from the two tables that all these recommendation models
+benefit from the increase of the count of items the user interact with on both
+RSME and MAE metrics.
+Our proposed \textbf{LSIM} don't perform well at the first ``0\%-20\%'' user cluster,
+its RMSE score is $0.9275$ which is less than \textbf{LibFM-MCMC}.
+But when the interactions become more, its performance rapidly increases,
 and beats the baseline methods obviously, which shows the effectiveness of our
-long-short interest model. 
+long-short interest model.
 
-\subsubsection{Effects of Window Size}
+\section{Conclusions and Future Works}
+In this study, we propose to use long-short interest model to utilize the rich
+sequential information on users interaction history and solve the rating
+prediction task in recommender system.
+By incorporating the sequential features into feature based collaborative
+filtering framework, better predction performance can be get.
+Our thorough evaluation, using three standard MovieLens dataset, demonstrates the
+effectiveness of the proposed method.
 
+Many studies remain for the future work.
+(1)
+(2)
+(3)
 
-\subsubsection{Effects of Sequential features dimension}
-
-
-\subsubsection{Effects of latent factors number}
-
-
-\section{Conclusions}
-
-
-% \section{Acknowledgments}
-% The work reported in this paper is supported by the National Natural Science Foundation of China Grant 61370116.
-% We thank anonymous reviewers for their beneficial comments.
-% We also thank Feifan Fan and Yue Fei for valuable suggestions related to this paper.
+\section{Acknowledgments}
+The work reported in this paper is supported by the National Natural
+Science Foundation of China Grant 61370116. We thank anonymous reviewers for
+their beneficial comments. We also thank Feifan Fan for valuable suggestions
+related to this paper.
 
 \bibliographystyle{abbrv}
 \bibliography{sigproc}
