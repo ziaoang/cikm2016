@@ -13,17 +13,17 @@
 \title{Improving Collaborative Filtering with\\
 Long-Short Interest Model}
 
-\numberofauthors{1}
-\author{
-\alignauthor
-Chao Lv \quad
-Lili Yao \quad
-Yansong Feng \quad
-Dongyan Zhao\titlenote{Corresponding author.}\\
-\affaddr{Institute of Computer Science and Technology}\\
-\affaddr{Peking University, Beijing 100871, China}\\
-\email{\{lvchao, yaolili, fengyansong, zhaodongyan\}@pku.edu.cn}
-}
+%\numberofauthors{1}
+%\author{
+%\alignauthor
+%Chao Lv \quad
+%Lili Yao \quad
+%Yansong Feng \quad
+%Dongyan Zhao\titlenote{Corresponding author.}\\
+%\affaddr{Institute of Computer Science and Technology}\\
+%\affaddr{Peking University, Beijing 100871, China}\\
+%\email{\{lvchao, yaolili, fengyansong, zhaodongyan\}@pku.edu.cn}
+%}
 
 \maketitle
 
@@ -617,7 +617,7 @@ and $I_{ij}$ is abinary matrix that indicates the ratings in the test set.
 \subsection{Baseline Models}
 To demonstrate the superiority of our long-short interest model for rating prediction,
 we compare our model model with several baseline methods.
-In special, we use two popular techniques, \textbf{LibMF} and \textbf{LibFM}, that are
+In special, we use two popular techniques, LibMF and LibFMtrain-20m, that are
 widely used in both academia and industry as our baseline models.
 
 LibMF is an open source tool for approximating an incomplete matrix
@@ -665,7 +665,7 @@ and we report the average RMSE and MAE.
 		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 & 0.8485 $\pm$ 0.0014 \\
 		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 & 0.8406 $\pm$ 0.0001 \\
         LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 & 0.8357 $\pm$ 0.0003 \\
-		LSIM       &  &  &  & \\
+		LSIM       & \textbf{0.8355 $\pm$ 0.0014} &  &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
@@ -683,7 +683,7 @@ and we report the average RMSE and MAE.
 		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 & 0.6517 $\pm$ 0.0046 \\
 		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 & 0.6481 $\pm$ 0.0002 \\
         LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 & 0.6486 $\pm$ 0.0002 \\
-		LSIM       &  &  &  & \\
+		LSIM       & \textbf{0.6539 $\pm$ 0.0010} &  &  & \\
 		\hline
 	\end{tabular}
 \end{table*}
@@ -692,24 +692,71 @@ Table \ref{tab:msre} and Table \ref{tab:mae} show the RSME performance and the M
 of our LSIM and baseline methods on the MovieLens datasets and NetFlix Prize dataset.
 The best performances are marked in bold typeface.
 We can clearly observe:
-(1) The prediction performance of \textbf{LibMF} is worse than other models, the reason
+\begin{enumerate}
+\item The prediction performance of \textbf{LibMF} is worse than other models, the reason
 should be that it foucses on accelerating the training speed of matrix factorization by
 parallelization, and doesn't pay more attention on the prediction precision.
-(2) In three \textbf{LibFM} models, MCMC optimization \textbf{LibFM-MCMC} shows
+\item In three \textbf{LibFM} models, MCMC optimization \textbf{LibFM-MCMC} shows
 a better performance in large datasets (MovieLens-10M, MovieLens-20M, Netflix) while
 ALS optimization \textbf{LibFM-ALS} shows a better performance in small datasets (MovieLens-1M).
 The performance of SGD optimization \textbf{LibFM-SGD} is the worst.
-(3) Our LSIM has the best performance between those models in both RMSE and MAE performance on all datasets,
+\item Our LSIM has the best performance between those models in both RMSE and MAE performance on all datasets,
 which shows the effectiveness of the long-short interest model.
-
 To the best of our knowledge, the best results published regarding MovieLens-1M and MovieLens-10M
-are reported by both (Lee et al., 2013; Sedhain et al., 2015) with a final RMSE of 0.831 ± 0.003
-and 0.782 ± 0.003. These scores are obtained with a training ratio of 90\%/10\% and without side information.
+are reported by both \cite{lee2013local, sedhain2015autorec} with a final RMSE of $0.831 \pm 0.003$
+and $0.782 \pm 0.003$. These scores are obtained with a training ratio of 90\%/10\% and without side information.
+\end{enumerate}
 
-% in order to exhibit the utility of side information, we report in Table 2 the RMSE conditionally to the number of miss- ing values for items. As expected, the fewer number of rat- ings for an item, the more important the side information. A more careful analysis of the RMSE improvement in this setting shows that the improvement is uniformly distributed over the users whatever their number of ratings.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=0.3]{images/rank_rsme.pdf}
+	\caption{A Example for Short Interest and Long Interest}
+	\label{fig:rank_rsme}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=0.3]{images/rank_mae.pdf}
+	\caption{A Example for Short Interest and Long Interest}
+	\label{fig:rank_mae}
+\end{figure}
+
+\subsection{Discuss}
+
+\subsubsection{Effects on Different Users}
+In our long-short interest model, the change of users' interest over time has been
+embedding into the sequential features. For these users with a lot of interactions,
+their long interest and short interest will be detailedly extracted via LSIM.
+But for the others with few interactions, LSIM only can extract marginal
+sequential features because their interest keeps stable.
+This phenomenon means that our LSIM will show a better performance on users with
+lots of interactions than ones with few interactions.
+
+In order to exhibit this character of LSIM,
+users on MovieLens-1M are sorted by their respective number of ratings, then
+they are grouped by the ranking order into $5$ clusters (i.e. 0\%-20\%,
+20\%-40\%, 40\%-60\%, 60\%-80\% and 80\%-100\%), and MSE and MAE are computed
+by cluster respectively with a training ratio of 90\%/10\%.
+For instance, the first cluster contains the 20\% of users with the lowest
+number of ratings and the last cluster contains the 20\% of users with the
+highest number of ratings.
+The provided results are the mean reported through $5$-cross validation.
+
+we report in Figure \ref{fig:rank_rsme} the RMSE and MAE for our LSIM and all baseline
+models conditionally to the number of interactions for users.
+As expected, for all models, the more number of interactions for an user, the better
+performance they have. For our proposed LSIM, its performance is not the best in the
+``0\%-20\%'', but when the interactions become more, its performance rapidly increases,
+and beats the baseline methods obviously, which shows the effectiveness of our
+long-short interest model. 
+
+\subsubsection{Effects of Window Size}
 
 
-% Parameter Sensitivity
+\subsubsection{Effects of Sequential features dimension}
+
+
+\subsubsection{Effects of latent factors number}
 
 
 \section{Conclusions}
