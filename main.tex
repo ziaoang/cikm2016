@@ -47,8 +47,29 @@ Experimental results on three MovieLens datasets demonstrate that
 our approach can achieve the state-of-the-art performance.
 \end{abstract}
 
-\category{H.3.3}{Information Search and Retrieval}{Information Filtering}
-\category{H.2.8}{Database Management}{Data Mining}
+%\category{H.3.3}{Information Search and Retrieval}{Information Filtering}
+%\category{H.2.8}{Database Management}{Data Mining}
+
+\begin{CCSXML}
+	<ccs2012>
+	<concept>
+	<concept_id>10010520.10010521.10010542.10010294</concept_id>
+	<concept_desc>Computer systems organization~Neural networks</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10002951.10003317.10003347.10003350</concept_id>
+	<concept_desc>Information systems~Recommender systems</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Computer systems organization~Neural networks}
+\ccsdesc[500]{Information systems~Recommender systems}
+
+\printccsdesc
+
 \keywords{Recommender System; Collaborative Filtering; Long-Short Interest Model;}
 
 \section{Introduction}
@@ -93,7 +114,7 @@ For example, given a user in MovieLens-1M dataset whose id is $5988$,
 Figure \label{fig:example} shows the movies he watched sorted by the rating time.
 We can find that this user liked watching comedy movies in April 2004 and
 changed to love watching drama movies in June 2004.
-Thses movies are going to be treated similar in conventional collaborative filtering,
+These movies are going to be treated similar in conventional collaborative filtering,
 but they are not in actual.
 A more reasonable assumption, aka long-short interest assumption, should be that
 items liked by the same user in the same time period have a higher possibility
@@ -115,7 +136,7 @@ learning vector representations of words which take advantage of
 a word order observed in a sentence,
 we introduce a long-short interest model (LSIM) to extract sequential features
 of users and items based on the new assumption.
-As illustrated in Figure \ref{fig:example2}, user is simliar with the sentence,
+As illustrated in Figure \ref{fig:example2}, user is similar with the sentence,
 both of them contains a sequence follow some order,
 and items are similar with words because both of them follow the law
 that the more close they are, the more similar they are.
@@ -146,7 +167,7 @@ Collaborative filtering based methods can mainly divided into three categories:
 user-based collaborative filtering, item-based collaborative filtering and
 model-based collaborative filtering.
 User-based collaborative filtering \cite{resnick1994grouplens} recommends
-items liked by users who are simliar with you
+items liked by users who are similar with you
 while item-based collaborative filtering \cite{sarwar2001item} aims to
 recommend items similar with ones you liked in the past.
 Matrix factorization (MF) is the most popular model-based collaborative filtering methods,
@@ -169,7 +190,7 @@ Meanwhile, non-linear algorithms are proposed to catch subtle factors,
 such as Non Linear Probabilistic Matrix Factorization \cite{lawrence2009non},
 Factorization Machines \cite{rendle2010factorization} and
 Local Low Rank Matrix Approximation \cite{lee2013local}.
-However, these mothodes group users and treat items they rated equally,
+However, these methods group users and treat items they rated equally,
 which will lose the sequential features to describe the long-short interest.
 
 Matrix factorization methods suffer from the cold start problem,
@@ -209,9 +230,9 @@ Meanwhile, their model can learn deep features for both items and users
 while CDL only extracts deep features for items.
 In our work, although sequential features learned by LSIM are used as side information
 in the feature based collaborative framework, but actually they aims to describe
-the long-short interest, and cann't be utilized to solve the cold start problem.
+the long-short interest, and can't be utilized to solve the cold start problem.
 
-\subsection{Nerual Network Language Model}
+\subsection{Neural Network Language Model}
 Traditional language model uses a one-hot representation to represent each word
 as a feature vector, where these feature vectors have the same length as the size
 of vocabulary, and the position that corresponds to the observed word is equal to 1,
@@ -279,9 +300,9 @@ and $\left\| \cdot \right\|_{Fro}$ is the Frobenius norm.
 
 Table \ref{tab:notations} summarizes the symbols used in our approach.
 In the next section, we will propose a long-short interest model
-to extract sequential features of users and items based on the long-short interest auumption.
+to extract sequential features of users and items based on the long-short interest assumption.
 
-\begin{table}[htpb]
+\begin{table}[htbp]
     \centering
     \caption{Summary of notations.}
     \label{tab:notations}
@@ -380,7 +401,7 @@ The training data set was derived from users interaction timeline $T$,
 which comprises users $x_i (i=1,2,...,N)$ and their interacted items ordered by the interacted time,
 $y_{i_1}$, $y_{i_2}$, ..., $y_{i_{L_i}}$
 \footnote{we use symbol $x$ and $y$ instead of classic $u$ and $v$ to avoid confusion between $v$
-and vector symbol $\mathbf{v}$ in nerual network language model.},
+and vector symbol $\mathbf{v}$ in neural network language model.},
 where $L_i$ denotes number of items interacted by user $x_i$,
 which is much less than the amount of items $M$.
 To characterize the \emph{long interest}, we consider the whole items list as the context and generate
@@ -455,7 +476,7 @@ hierarchical softmax and negative sampling are two main approaches to accelerate
 the computation, and we use negative sampling approach in this paper.
 
 \subsection{Feature based Collaborative Filtering}
-Feature based collaborative filtering \cite{chen2012svdfeature} is a variety of
+Feature based collaborative filtering \cite{chen2011feature, chen2012svdfeature} is a variety of
 collaborative filtering, it allows us to build factorization models incorporating
 side information such as temporal dynamics, neighborhood relationship,
 and hierarchical information compare to conventional collaborative filtering,
@@ -582,7 +603,7 @@ The MovieLens-10M dataset contains about 10 million ratings and 95580 tags
 applied to 10677 movies by 69878 users of the online movie recommender service MovieLens.
 Users were selected at random for inclusion. All users selected had rated
 at least 20 movies. Unlike previous MovieLens data sets, no demographic information is included.
-Ratings are made on a 5-star scale, with half-star increments, i.e., 0.5 is the worst scroe
+Ratings are made on a 5-star scale, with half-star increments, i.e., 0.5 is the worst score
 and 5.0 is the best score.
 
 the MovieLens-20M dataset describes 5-star rating and free-text tagging activity.
@@ -598,7 +619,7 @@ such as gender, age and occupation of users and movies' genres,
 but we don't use the side information in all our experiments.
 Table \ref{tab:statistics} summarizes the statistics of three datasets.
 
-\begin{table}[htpb]
+\begin{table}[htbp]
     \centering
     \caption{Statistics of three MovieLens datasets and Netflix dataset.}
     \label{tab:statistics}
@@ -616,8 +637,8 @@ Table \ref{tab:statistics} summarizes the statistics of three datasets.
 \subsubsection{Metrics}
 We employ two metrics, the Root Mean Square Error (RMSE) and the Mean Absolute Error (MAE),
 to measure the rating prediction quality of our proposed approach in comparison with other
-collaborative filtering baesd recommendation methods.
-The metrics RSME is defined as:
+collaborative filtering based recommendation methods.
+The metrics RMSE is defined as:
 
 \begin{equation}
     RSME = \sqrt{ \frac{1}{N} \sum_{i,j} I_{ij} (R_{ij} - \hat{R}_{ij})^2 }
@@ -625,7 +646,7 @@ The metrics RSME is defined as:
 
 where $R_{ij}$ denotes the ground-truth rating the user $i$ gives to the item $j$,
 $\hat{R}_{ij}$ denotes the corresponding predicted rating the user $i$ gives to
-the item $j$ by a method, $I_{ij}$ is abinary matrix that indicates the ratings
+the item $j$ by a method, $I_{ij}$ is a binary matrix that indicates the ratings
 in the test set, and $N$ is the total number of ratings in the test set.
 The metrics MAE is defined as:
 
@@ -687,9 +708,9 @@ and benchmark models, the remaining data are used for testing.
 This process is repeated five times, and we report the mean value and
 standard deviation of RMSE and MAE.
 
-\begin{table*}[htpb]
+\begin{table*}[htbp]
 	\centering
-	\caption{RSME Performance comparison of our proposed model and benchmark models
+	\caption{RMSE Performance comparison of our proposed model and benchmark models
     with a training ratio of 90\%/10\% on three MovieLens datasets.}
 	\label{tab:msre}
 	\begin{tabular}{|l|c|c|c|}
@@ -700,12 +721,12 @@ standard deviation of RMSE and MAE.
 		LibFM-SGD  & 0.8641 $\pm$ 0.0015 & 0.8022 $\pm$ 0.0013 & 0.7945 $\pm$ 0.0023 \\
 		LibFM-ALS  & 0.8453 $\pm$ 0.0015 & 0.7936 $\pm$ 0.0004 & 0.7860 $\pm$ 0.0004 \\
         LibFM-MCMC & 0.8460 $\pm$ 0.0011 & 0.7866 $\pm$ 0.0004 & 0.7787 $\pm$ 0.0005 \\
-		LSIM       & \textbf{0.8355} $\pm$ \textbf{0.0014} &  & \\
+		LSIM       & \textbf{0.8355} $\pm$ \textbf{0.0014} & \textbf{0.7740} $\pm$ \textbf{0.0013} & \textbf{0.7753} $\pm$ \textbf{0.0012} \\
 		\hline
 	\end{tabular}
 \end{table*}
 
-\begin{table*}[htpb]
+\begin{table*}[htbp]
 	\centering
 	\caption{MAE Performance comparison of our proposed model and benchmark models
     with a training ratio of 90\%/10\% on three MovieLens datasets.}
@@ -718,19 +739,19 @@ standard deviation of RMSE and MAE.
 		LibFM-SGD  & 0.6674 $\pm$ 0.0027 & 0.6127 $\pm$ 0.0034 & 0.6016 $\pm$ 0.0036 \\
 		LibFM-ALS  & 0.6609 $\pm$ 0.0010 & 0.6068 $\pm$ 0.0002 & 0.5971 $\pm$ 0.0003 \\
         LibFM-MCMC & 0.6661 $\pm$ 0.0008 & 0.6039 $\pm$ 0.0002 & 0.5941 $\pm$ 0.0005 \\
-		LSIM       & \textbf{0.6539} $\pm$ \textbf{0.0010} &  & \\
+		LSIM       & \textbf{0.6539} $\pm$ \textbf{0.0010} & \textbf{0.5928} $\pm$ \textbf{0.0008} & \textbf{0.5909} $\pm$ \textbf{0.0014} \\
 		\hline
 	\end{tabular}
 \end{table*}
 
 Table \ref{tab:msre} shows the RSME performance of our proposed model and benchmark methods 
 with a training ratio of 90\% / 10\% on three MovieLens datasets while Table \ref{tab:mae}
-shows the RSME performance of thses models in the same experimental setting respectively.
+shows the RMSE performance of these models in the same experimental setting respectively.
 The best performances are marked in bold typeface.
 From the two tables, we can clearly observe:
 \begin{enumerate}
 \item The rating prediction performance of \textbf{LibMF} is worst among all the models,
-the reason should be that it foucses on accelerating the training speed of matrix
+the reason should be that it focuses on accelerating the training speed of matrix
 factorization by parallelization, and doesn't pay enough attention on optimizing
 the prediction precision.
 \item In three \textbf{LibFM} models, MCMC optimization \textbf{LibFM-MCMC} shows
@@ -745,7 +766,6 @@ published regarding MovieLens-1M and MovieLens-10M are reported by both
 and $0.782 \pm 0.003$. These scores are obtained with a training ratio of
 90\%/10\% and without side information. That means our proposed model can achieve
 the start-of-the-art performance.
-\item the more
 \end{enumerate}
 
 \subsection{Effects on Different Users}
@@ -770,7 +790,7 @@ The provided results are the mean reported through $5$-cross validation.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[scale=0.3]{images/rank_rsme.pdf}
+    \includegraphics[scale=0.3]{images/rank_rmse.pdf}
     \caption{RMSE computed by cluster of users sorted by their respective number
     of ratings on MovieLens-10M with a training ratio of 90\%/10\%.}
     \label{fig:rank_rsme}
@@ -799,23 +819,28 @@ long-short interest model.
 
 \section{Conclusions and Future Works}
 In this study, we propose to use long-short interest model to utilize the rich
-sequential information on users interaction history and solve the rating
+sequential information on users interaction history to solve the rating
 prediction task in recommender system.
 By incorporating the sequential features into feature based collaborative
-filtering framework, better predction performance can be get.
-Our thorough evaluation, using three standard MovieLens dataset, demonstrates the
-effectiveness of the proposed method.
+filtering framework, better prediction performance can be obtained.
+Our thorough evaluation, using three standard MovieLens datasets, demonstrates
+the effectiveness of the proposed method.
 
 Many studies remain for the future work.
-(1)
-(2)
-(3)
+(1) When we carry out the long-short interest model, items given different ratings
+are treated equally, and ratings information is ignored. Hence, how to take advantage
+of the ratings information is one of our future works. 
+(2) Side information plays an important role in recommender system, especially
+for solving the cold start problem. In our long-short interest model, we don't use
+any side information, but it is certain that with the help of side information,
+users' long-short interest can be learned more effectively. Therefore, we will focus
+on making use of side information in the future.
 
-\section{Acknowledgments}
-The work reported in this paper is supported by the National Natural
-Science Foundation of China Grant 61370116. We thank anonymous reviewers for
-their beneficial comments. We also thank Feifan Fan for valuable suggestions
-related to this paper.
+%\section{Acknowledgments}
+%The work reported in this paper is supported by the National Natural
+%Science Foundation of China Grant 61370116. We thank anonymous reviewers for
+%their beneficial comments. We also thank Feifan Fan for valuable suggestions
+%related to this paper.
 
 \bibliographystyle{abbrv}
 \bibliography{sigproc}
